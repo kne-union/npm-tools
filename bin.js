@@ -27,7 +27,7 @@ const writeToPackageJson = async (func) => {
 
 switch (script) {
     case 'latestVersion':
-        npmTool.getLatestVersion().then((version) => console.log(version)).catch((err) => {
+        npmTool.getLatestVersion(args[1]).then((version) => console.log(version)).catch((err) => {
             throw err;
         });
         break;
@@ -51,7 +51,9 @@ switch (script) {
         if (!args[1]) {
             throw new Error('参数传递不正确');
         }
-        downloadNpmPackage(...args[1].split('@'));
+        downloadNpmPackage(...args[1].split('@')).catch((err) => {
+            throw err;
+        });
         break;
     case 'entryHtml':
     default:
