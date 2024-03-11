@@ -23,7 +23,7 @@ const writeToPackageJson = async (func) => {
 
 switch (script) {
     case 'latestVersion':
-        npmTool.getLatestVersion().then(async (version) => console.log(version)).catch((err) => {
+        npmTool.getLatestVersion().then((version) => console.log(version)).catch((err) => {
             throw err;
         });
         break;
