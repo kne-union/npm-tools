@@ -12,7 +12,7 @@ console.log(`执行命令:${script || 'entryHtml'}`);
 
 const writeToPackageJson = async (func) => {
     const packageJsonPath = path.resolve(process.cwd(), 'package.json');
-    const version = func().catch((err) => {
+    const version = await func().catch((err) => {
         console.error(err);
     });
     await fs.writeJson(packageJsonPath, Object.assign({}, await fs.readJson(packageJsonPath), version && {version}));
