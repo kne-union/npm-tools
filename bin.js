@@ -3,6 +3,7 @@
 const npmTool = require('./index');
 const fs = require('fs-extra');
 const path = require('path');
+const downloadNpmPackage = require('@kne/download-npm-package')
 
 const args = process.argv.slice(2);
 
@@ -44,6 +45,13 @@ switch (script) {
         writeToPackageJson(npmTool.getNextPatchVersion).catch((err) => {
             throw err;
         });
+        break;
+    case 'download':
+        console.log(`开始下载package:${args[1]}`);
+        if (!args[1]) {
+            throw new Error('参数传递不正确');
+        }
+        downloadNpmPackage(...args[1].split('@'));
         break;
     case 'entryHtml':
     default:
