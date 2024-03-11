@@ -1,0 +1,25 @@
+{
+  "name": "@kne/npm-tools",
+  "version": "0.1.0",
+  "description": "发布npm包的一些工具脚本",
+  "files": [
+    "lib",
+    "bin.js",
+    "index.js"
+  ],
+  "main": "./index.js",
+  "bin": {
+    "npm-tools": "./bin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "linzp",
+  "license": "ISC",
+  "dependencies": {
+    "@kne/ensure-slash": "^0.1.0",
+    "@kne/load-npm-info": "^0.1.0",
+    "fs-extra": "^11.2.0",
+    "jsdom": "^24.0.0"
+  }
+}
