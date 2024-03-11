@@ -51,7 +51,7 @@ switch (script) {
         if (!args[1]) {
             throw new Error('参数传递不正确');
         }
-        downloadNpmPackage(...args[1].split('@')).catch((err) => {
+        downloadNpmPackage(...args[1].split(/(?<!^)@/)).catch((err) => {
             throw err;
         });
         break;
