@@ -26,13 +26,19 @@ switch (script) {
         });
         break;
     case 'nextMajorVersion':
-        writeToPackageJson(npmTool.getNextMajorVersion).catch((err) => throw err);
+        writeToPackageJson(npmTool.getNextMajorVersion).catch((err) => {
+            throw err;
+        });
         break;
     case 'nextMinorVersion':
-        writeToPackageJson(npmTool.getNextMinorVersion).catch((err) => throw err);
+        writeToPackageJson(npmTool.getNextMinorVersion).catch((err) => {
+            throw err;
+        });
         break;
     case 'nextPatchVersion':
-        writeToPackageJson(npmTool.getNextPatchVersion).catch((err) => throw err);
+        writeToPackageJson(npmTool.getNextPatchVersion).catch((err) => {
+            throw err;
+        });
         break;
     case 'entryHtml':
     default:
