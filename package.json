@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -11,12 +11,12 @@
   "bin": {
     "npm-tools": "./bin.js"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "author": "linzp",
   "license": "ISC",
   "dependencies": {
     "@kne/ensure-slash": "^0.1.0",
+    "@kne/fetch-npm-package": "^0.1.0",
     "@kne/load-npm-info": "^0.1.0",
     "fs-extra": "^11.2.0",
     "jsdom": "^24.0.0"

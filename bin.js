@@ -3,7 +3,7 @@
 const npmTool = require('./index');
 const fs = require('fs-extra');
 const path = require('path');
-const downloadNpmPackage = require('@kne/download-npm-package')
+const downloadNpmPackage = require('@kne/fetch-npm-package')
 
 const args = process.argv.slice(2);
 
