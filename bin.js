@@ -3,7 +3,7 @@
 const npmTool = require('./index');
 const fs = require('fs-extra');
 const path = require('path');
-const downloadNpmPackage = require('@kne/fetch-npm-package')
+const downloadNpmPackage = require('@kne/fetch-npm-package');
 
 const args = process.argv.slice(2);
 
@@ -56,8 +56,18 @@ switch (script) {
         });
         break;
     case 'entryHtml':
-    default:
         npmTool.generateEntryHtml().catch((err) => console.error(err));
+        break;
+    case 'manifest':
+        npmTool.generateManifest().catch((err) => console.error(err));
+        break;
+    case 'init':
+    default:
+        console.log(`开始下载template package:${args[2]}`);
+        if (!args[2]) {
+            throw new Error('参数传递不正确');
+        }
+        npmTool.initProject(args[1], ...args[2].split(/(?<!^)@/)).catch((err) => console.error(err));
 }
 
 
