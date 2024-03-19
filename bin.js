@@ -67,7 +67,10 @@ switch (script) {
         break;
     case 'init':
     default:
-        npmTool.initProject(args[1], ...(args[2] ? args[2].split(/(?<!^)@/) : '@kne-template/node')).catch((err) => {
+        if (!args[1]) {
+            throw new Error('项目名不能缺省');
+        }
+        npmTool.initProject(args[1], ...(args[2] ? args[2].split(/(?<!^)@/) : ['@kne-template/node'])).catch((err) => {
             throw err;
         });
 }
