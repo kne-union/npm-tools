@@ -56,18 +56,20 @@ switch (script) {
         });
         break;
     case 'entryHtml':
-        npmTool.generateEntryHtml().catch((err) => console.error(err));
+        npmTool.generateEntryHtml().catch((err) => {
+            throw err;
+        });
         break;
     case 'manifest':
-        npmTool.generateManifest().catch((err) => console.error(err));
+        npmTool.generateManifest().catch((err) => {
+            throw err;
+        });
         break;
     case 'init':
     default:
-        console.log(`开始下载template package:${args[2]}`);
-        if (!args[2]) {
-            throw new Error('参数传递不正确');
-        }
-        npmTool.initProject(args[1], ...args[2].split(/(?<!^)@/)).catch((err) => console.error(err));
+        npmTool.initProject(args[1], ...(args[2] ? args[2].split(/(?<!^)@/) : '@kne-template/node')).catch((err) => {
+            throw err;
+        });
 }
 
 
