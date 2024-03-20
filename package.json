@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@inquirer/prompts": "^4.3.0",
     "@kne/apply-template": "^1.0.0",
+    "@kne/camel-case": "^0.1.3",
     "@kne/ensure-slash": "^0.1.0",
     "@kne/fetch-npm-package": "^0.1.1",
     "@kne/load-npm-info": "^0.1.3",
