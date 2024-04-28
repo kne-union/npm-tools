@@ -81,16 +81,24 @@ npx @kne/npm-tools entryHtml
 ```
 
 ### manifest
-1. 创建 readme 和 list 文件夹
-2. 读取配置文件信息并返回新的数据
+1. 获取导出地址
+2. 创建 readme 和 list 文件夹
+3. 读取配置文件信息并返回新的数据
     * 当前目录下，读取环境变量中的 [MANIFEST_FILE] 文件或者 package.json 配置文件
     * 将文件内容的 manifest-config 数据重新循环，获取配置中的包名在 npm 中的信息，配置生成新的数据
-    * 
-3. 
+4. 定义 readme json 数据集合
+5. 将获取到的数据转换，生成新的 manifest.json 文件，并将定义路径和数据放入 readme 数据集合中
+6. 将获取到的数据转换中所有远程加载的包写入 remote-components.json 中
+7. 将 readme 数据集合中的数据分类写入 readme 文件夹内 
+8. 将 readme 数据集合中的数据写入 list 文件夹内
+
+***list 文件夹主要储存从 npm 中获取到的包数据***
+***readme 文件夹主要储存每个库中包的 readme 文件数据***
 
 ```shell
 npx @kne/npm-tools manifest
 ```
+
 ### init
 
 可以使用 npm-tools 创建一个预置的模板项目
