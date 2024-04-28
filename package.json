@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -11,7 +11,19 @@
   "bin": {
     "npm-tools": "./bin.js"
   },
-  "scripts": {},
+  "scripts": {
+    "init": "husky",
+    "build:md": "npx @kne/md-doc",
+    "start:md": "npx @kne/md-doc --watch",
+    "prettier": "prettier --config .prettierrc --write '{libs/**/*,index}.{js,jsx,ts,tsx,json,css,scss}'",
+    "lint-staged": "npx lint-staged"
+  },
+  "lint-staged": {
+    "{libs/**/*,index}.{js,jsx,ts,tsx,json,css,scss}": [
+      "prettier --config .prettierrc --write",
+      "git add"
+    ]
+  },
   "author": "linzp",
   "license": "ISC",
   "dependencies": {
@@ -31,6 +43,8 @@
   "devDependencies": {
     "ejs": "^3.1.9",
     "glob": "^10.3.10",
+    "husky": "^9.0.11",
+    "prettier": "^3.2.5",
     "text-extensions": "^2.4.0"
   }
 }
