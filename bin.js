@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const downloadNpmPackage = require('@kne/fetch-npm-package');
 const {select} = require('@inquirer/prompts');
+const deployManifest = require("./lib/deployManifest");
 const args = process.argv.slice(2);
 
 const script = args[0];
@@ -52,6 +53,12 @@ switch (script) {
             throw new Error('参数传递不正确');
         }
         downloadNpmPackage(...args[1].split(/(?<!^)@/)).catch((err) => {
+            throw err;
+        });
+        break;
+    case 'deploy':
+        console.log('执行manifest部署');
+        downloadNpmPackage.deployManifest().catch((err) => {
             throw err;
         });
         break;
