@@ -58,7 +58,7 @@ switch (script) {
         break;
     case 'deploy':
         console.log('执行manifest部署');
-        downloadNpmPackage.deployManifest().catch((err) => {
+        npmTool.deployManifest().catch((err) => {
             throw err;
         });
         break;
