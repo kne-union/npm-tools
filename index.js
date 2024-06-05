@@ -3,9 +3,11 @@ const getLatestVersion = require('./lib/getLatestVersion');
 const getNextVersion = require('./lib/getNextVersion');
 const initProject = require('./lib/initProject');
 const generateManifest = require('./lib/generateManifest');
+const deployManifest = require('./lib/deployManifest');
 
 module.exports = {
     generateEntryHtml,
+    deployManifest,
     getLatestVersion,
     initProject,
     generateManifest,
