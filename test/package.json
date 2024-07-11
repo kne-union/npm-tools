@@ -11,10 +11,14 @@
       ],
       "@kne-components/components-iconfont",
       "@kne-components/components-field",
+      "@kne-components/components-view",
       "@kne-components/components-account",
+      "@kne-components/components-file-manager",
       "@kne-components/components-ckeditor",
       "@kne-components/components-document",
-      "@kne-components/components-postcat"
+      "@kne-components/components-postcat",
+      "@kne-components/components-talent-platform",
+      "@kne-components/email-template"
     ],
     "libs": [
       "@kne-components/remote-loader",
@@ -29,24 +33,22 @@
       "@kne-components/react-file-type"
     ],
     "node-libs": [
-      "@kne/fetch-npm-package"
+      "@kne/fetch-npm-package",
+      "@kne/load-npm-info",
+      "@kne/npm-tools",
+      "@kne/modules-dev",
+      "@kne/blog-maker",
+      "@kne/md-doc",
+      "@kne/camel-case",
+      "@kne/apply-template"
     ],
     "miniprograms": [
       "@kne/mini-core",
       "@kne/antd-taro"
     ],
-    "third-parties": [
-      [
-        "monaco-editor",
-        {
-          "importantVersion": [
-            "0.48.0"
-          ]
-        }
-      ]
-    ],
-    "others": [
-      "@kne-components/ued"
-    ]
+    "third-parties":[["monaco-editor",{
+      "importantVersion":["0.48.0"]
+    }]],
+    "others":["@kne-components/ued"]
   }
 }

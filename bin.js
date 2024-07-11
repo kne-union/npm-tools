@@ -61,6 +61,12 @@ switch (script) {
             throw err;
         });
         break;
+    case 'deployPackage':
+        console.log('执行package部署');
+        npmTool.deployPackage().catch((err) => {
+            throw err;
+        });
+        break;
     case 'entryHtml':
         npmTool.generateEntryHtml().catch((err) => {
             throw err;

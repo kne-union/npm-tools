@@ -4,10 +4,12 @@ const getNextVersion = require('./lib/getNextVersion');
 const initProject = require('./lib/initProject');
 const generateManifest = require('./lib/generateManifest');
 const deployManifest = require('./lib/deployManifest');
+const deployPackage = require('./lib/deployPackage');
 
 module.exports = {
     generateEntryHtml,
     deployManifest,
+    deployPackage,
     getLatestVersion,
     initProject,
     generateManifest,
