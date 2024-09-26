@@ -32,6 +32,22 @@ npx @kne/npm-tools nextMajorVersion
 npx @kne/npm-tools nextMajorVersion
 ```
 
+### getPackageInfo
+
+获取当前项目下的package.json内容，并且获取其中字段的值
+以下为获取当前包的名称
+
+```shell
+npx @kne/npm-tools packageInfo name
+```
+
+***注意:***
+如果包名中包含scope，则使用 name获取的是不带scope的值，可以使用packageName获取包完整名称，可以通过 packageScope获取scope的值，例如
+
+包名为 @kne/react-form 会被解析为
+
+name: react-form packageName: @kne/react-form packageScope: kne
+
 ### nextPatchVersion
 
 在自己项目中运行。
@@ -52,8 +68,8 @@ npx @kne/npm-tools download [npm-package-name]
 ### entryHtml
 
 1. 获取环境变量中的 部署地址（DEPLOY_URL）、APP_NAME、VERSION
-2. 将 [APP_NAME]、"static/js"、"remoteEntry.js" 匹配为 URL 
-3. 获取入口文件，创建一个新的 DOM 环境，并在其中加载刚获取到的入口文件内容 
+2. 将 [APP_NAME]、"static/js"、"remoteEntry.js" 匹配为 URL
+3. 获取入口文件，创建一个新的 DOM 环境，并在其中加载刚获取到的入口文件内容
 4. 拿到 dom 环境的 window，将匹配的 URL 转换到 window 的 head 中
 5. 生成 script 标签，声明 runtimeAppName、runtimePublicUrl 以及 runtimeEnv 参数并赋值
 6. 将 dom 序列化后的内容写入口文件
@@ -63,6 +79,7 @@ npx @kne/npm-tools entryHtml
 ```
 
 ### manifest
+
 1. 获取导出地址
 2. 创建 readme 和 list 文件夹
 3. 读取配置文件信息并返回新的数据
@@ -71,7 +88,7 @@ npx @kne/npm-tools entryHtml
 4. 定义 readme json 数据集合
 5. 将获取到的数据转换，生成新的 manifest.json 文件，并将定义路径和数据放入 readme 数据集合中
 6. 将获取到的数据转换中所有远程加载的包写入 remote-components.json 中
-7. 将 readme 数据集合中的数据分类写入 readme 文件夹内 
+7. 将 readme 数据集合中的数据分类写入 readme 文件夹内
 8. 将 readme 数据集合中的数据写入 list 文件夹内
 
 ***list 文件夹主要储存从 npm 中获取到的包数据***
