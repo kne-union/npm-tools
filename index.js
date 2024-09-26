@@ -5,6 +5,7 @@ const initProject = require('./lib/initProject');
 const generateManifest = require('./lib/generateManifest');
 const deployManifest = require('./lib/deployManifest');
 const deployPackage = require('./lib/deployPackage');
+const getPackageInfo = require('./lib/getPackageInfo');
 
 module.exports = {
     generateEntryHtml,
@@ -15,5 +16,6 @@ module.exports = {
     generateManifest,
     getNextMajorVersion: getNextVersion.major,
     getNextMinorVersion: getNextVersion.minor,
-    getNextPatchVersion: getNextVersion.patch
+    getNextPatchVersion: getNextVersion.patch,
+    getPackageInfo
 };
