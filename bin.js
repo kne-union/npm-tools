@@ -26,6 +26,11 @@ const writeToPackageJson = async (func) => {
 
 
 switch (script) {
+    case 'packageInfo':
+        npmTool.getPackageInfo(args[1]).then((info) => console.log(typeof info === 'object' ? JSON.stringify(info) : info)).catch((err) => {
+            throw err;
+        });
+        break;
     case 'latestVersion':
         npmTool.getLatestVersion(args[1]).then((version) => console.log(version)).catch((err) => {
             throw err;
@@ -84,17 +89,17 @@ switch (script) {
         }
         (async () => {
             const templateArgs = args[2] ? args[2].split(/(?<!^)@/) : [await select({
-                message: '请选择模板类型', choices: [{name: 'NodeJS Libs', value: '@kne-template/node'},
-                    {name: 'Fastify Server Project', value: '@kne-template/fastify-server'},
-                    {name: 'Fastify Business Project', value: '@kne-template/fastify-app'}, {
-                        name: 'Frontend Libs', value: '@kne-template/libs'
-                    }, {name: 'Remote Components', value: '@kne-template/remote'}, {
-                        name: 'Business Project', value: '@kne-template/project'
-                    }, {
-                        name: 'WeChat Miniprogram Libs', value: '@kne-template/miniprogram-libs'
-                    }, {
-                        name: 'WeChat Miniprogram Project', value: '@kne-template/miniprogram-project'
-                    }],
+                message: '请选择模板类型', choices: [{name: 'NodeJS Libs', value: '@kne-template/node'}, {
+                    name: 'Fastify Server Project', value: '@kne-template/fastify-server'
+                }, {name: 'Fastify Business Project', value: '@kne-template/fastify-app'}, {
+                    name: 'Frontend Libs', value: '@kne-template/libs'
+                }, {name: 'Remote Components', value: '@kne-template/remote'}, {
+                    name: 'Business Project', value: '@kne-template/project'
+                }, {
+                    name: 'WeChat Miniprogram Libs', value: '@kne-template/miniprogram-libs'
+                }, {
+                    name: 'WeChat Miniprogram Project', value: '@kne-template/miniprogram-project'
+                }],
             })];
 
             npmTool.initProject(args[1], ...templateArgs).catch((err) => {
