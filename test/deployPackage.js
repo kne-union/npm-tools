@@ -1,3 +1,3 @@
 const deployManifest = require('../lib/deployPackage');
 
-deployManifest('@kne-components/components-core');
+deployManifest('pdfjs-dist@4.4.168');
