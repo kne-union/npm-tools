@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.41",
+  "version": "0.1.43",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -32,7 +32,7 @@
     "@kne/camel-case": "^0.1.3",
     "@kne/ensure-slash": "^0.1.0",
     "@kne/fetch-npm-package": "^0.1.1",
-    "@kne/load-npm-info": "^0.1.3",
+    "@kne/load-npm-info": "^0.1.5",
     "@kne/md-doc": "^0.1.8",
     "cross-spawn-promise": "^0.10.2",
     "fs-extra": "^11.2.0",
@@ -41,7 +41,7 @@
     "validate-npm-package-name": "^5.0.0"
   },
   "devDependencies": {
-    "ejs": "^3.1.9",
+    "ejs": "^3.1.10",
     "glob": "^10.3.10",
     "husky": "^9.0.11",
     "prettier": "^3.2.5",
