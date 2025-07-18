@@ -72,6 +72,12 @@ switch (script) {
             throw err;
         });
         break;
+  case 'deployProject':
+    console.log('执行project部署');
+    npmTool.deployProject().catch((err) => {
+      throw err;
+    });
+    break;
     case 'entryHtml':
         npmTool.generateEntryHtml().catch((err) => {
             throw err;
@@ -91,6 +97,8 @@ switch (script) {
             const templateArgs = args[2] ? args[2].split(/(?<!^)@/) : [await select({
                 message: '请选择模板类型', choices: [{name: 'NodeJS Libs', value: '@kne-template/node'}, {
                     name: 'Fastify Server Project', value: '@kne-template/fastify-server'
+                },{
+                    name: 'Fastify Libs', value: '@kne-template/fastify-libs'
                 }, {name: 'Fastify Business Project', value: '@kne-template/fastify-app'}, {
                     name: 'Frontend Libs', value: '@kne-template/libs'
                 }, {name: 'Remote Components', value: '@kne-template/remote'}, {
