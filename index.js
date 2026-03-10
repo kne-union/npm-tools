@@ -6,6 +6,7 @@ const generateManifest = require('./lib/generateManifest');
 const deployManifest = require('./lib/deployManifest');
 const deployPackage = require('./lib/deployPackage');
 const deployProject = require('./lib/deployProject');
+const deployPrompts = require('./lib/deployPrompts');
 const getPackageInfo = require('./lib/getPackageInfo');
 
 module.exports = {
@@ -13,6 +14,7 @@ module.exports = {
   deployManifest,
   deployPackage,
   deployProject,
+  deployPrompts,
   getLatestVersion,
   initProject,
   generateManifest,
