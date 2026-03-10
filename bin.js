@@ -78,6 +78,12 @@ switch (script) {
       throw err;
     });
     break;
+  case 'deployPrompts':
+    console.log('执行prompts部署');
+    npmTool.deployPrompts(args[1]).catch((err) => {
+      throw err;
+    });
+    break;
     case 'entryHtml':
         npmTool.generateEntryHtml().catch((err) => {
             throw err;
