@@ -51,6 +51,33 @@
 |------|------|------|
 | `init` | `<project-name> [template]` | 初始化项目 |
 
+模板 `prompts.json` 中的每个问题可声明 `when`，根据已回答的问题决定是否继续提问：
+
+```json
+{
+  "name": "clientLayout",
+  "type": "select",
+  "when": {
+    "name": "includeClient",
+    "equals": true
+  },
+  "options": {
+    "message": "Client 使用哪种布局？",
+    "default": "system-layout"
+  }
+}
+```
+
+条件支持：
+
+- `"when": "fieldName"`：字段值为真时提问
+- `{ "name": "fieldName", "equals": value }`
+- `{ "name": "fieldName", "notEquals": value }`
+- `{ "name": "fieldName", "includes": [value1, value2] }`
+- `{ "all": [...] }` / `{ "any": [...] }`：组合多个条件
+
+条件不满足时会使用问题顶层 `default` 或 `options.default` 作为模板参数（若已配置）。
+
 **可选模板列表：**
 
 | 模板名称 | 包名 | 说明 |
@@ -59,6 +86,7 @@
 | Fastify Server Project | `@kne-template/fastify-server` | Fastify 服务端项目 |
 | Fastify Libs | `@kne-template/fastify-libs` | Fastify 库模板 |
 | Fastify Business Project | `@kne-template/fastify-app` | Fastify 业务项目 |
+| Fullstack Biz App | `@kne-template/fullstack-biz-app` | 全栈 BizUnit 业务项目（可选 Tenant/客户端） |
 | Frontend Libs | `@kne-template/libs` | 前端库模板 |
 | Remote Components | `@kne-template/remote` | 远程组件模板 |
 | Business Project | `@kne-template/project` | 业务项目模板 |

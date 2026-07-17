@@ -95,7 +95,6 @@ switch (script) {
         });
         break;
     case 'init':
-    default:
         if (!args[1]) {
             throw new Error('项目名不能缺省');
         }
@@ -106,6 +105,8 @@ switch (script) {
                 },{
                     name: 'Fastify Libs', value: '@kne-template/fastify-libs'
                 }, {name: 'Fastify Business Project', value: '@kne-template/fastify-app'}, {
+                    name: 'Fullstack Biz App', value: '@kne-template/fullstack-biz-app'
+                }, {
                     name: 'Frontend Libs', value: '@kne-template/libs'
                 }, {name: 'Remote Components', value: '@kne-template/remote'}, {
                     name: 'Business Project', value: '@kne-template/project'
@@ -120,6 +121,7 @@ switch (script) {
                 throw err;
             });
         })();
+        break;
+    default:
+        throw new Error(`未知命令: ${script || '(空)'}`);
 }
-
-
