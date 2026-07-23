@@ -26,6 +26,10 @@
   },
   "author": "linzp",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kne-union/npm-tools"
+  },
   "dependencies": {
     "@inquirer/prompts": "^4.3.0",
     "@kne/apply-template": "^1.0.1",
