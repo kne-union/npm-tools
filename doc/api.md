@@ -40,6 +40,8 @@
 
 - 文件名：`{namespace}.{locale}.i18n`
 - 正文：`code="value"`（每行一条）
+- 单文件：直接写入 `--out` 目录
+- 多文件：打包为 `{out}.zip`（如默认 `i18n-export.zip`）
 
 ```shell
 # 在项目根目录

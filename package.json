@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.55",
+  "version": "0.1.56",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -41,6 +41,7 @@
     "cross-spawn-promise": "^0.10.2",
     "fs-extra": "^11.2.0",
     "jsdom": "^24.0.0",
+    "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "validate-npm-package-name": "^5.0.0"
   },
