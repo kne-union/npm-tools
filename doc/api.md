@@ -32,6 +32,31 @@
 | `deployPackage` | - | 执行 package 部署 |
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
+| `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目 `locale` 语言包导出为 IntlAdmin 可导入的 `.i18n` |
+
+#### localeToI18n
+
+扫描 `**/locale/{zh-CN,en-US,...}.{js,json}`，按邻近 `withLocale` 的 `namespace`（缺省 `global`）合并，生成：
+
+- 文件名：`{namespace}.{locale}.i18n`
+- 正文：`code="value"`（每行一条）
+
+```shell
+# 在项目根目录
+npx @kne/npm-tools localeToI18n
+
+# 指定目录（例：telent-coach）
+npx @kne/npm-tools localeToI18n --root /path/to/telent-coach --out /path/to/telent-coach/i18n-export
+
+# 兼容位置参数
+npx @kne/npm-tools localeToI18n /path/to/telent-coach ./i18n-export
+
+# 包含 server/ 下 locale
+npx @kne/npm-tools localeToI18n --include-server
+
+# 只预览不写文件
+npx @kne/npm-tools localeToI18n --dry-run
+```
 
 #### deployPrompts 类型参数
 
