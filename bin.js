@@ -84,6 +84,13 @@ switch (script) {
       throw err;
     });
     break;
+  case 'localeToI18n':
+  case 'locale-to-i18n':
+    console.log('导出 locale 为 .i18n');
+    npmTool.localeToI18n(args.slice(1)).catch((err) => {
+      throw err;
+    });
+    break;
     case 'entryHtml':
         npmTool.generateEntryHtml().catch((err) => {
             throw err;

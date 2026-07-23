@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.54",
+  "version": "0.1.55",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",

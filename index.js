@@ -8,6 +8,7 @@ const deployPackage = require('./lib/deployPackage');
 const deployProject = require('./lib/deployProject');
 const deployPrompts = require('./lib/deployPrompts');
 const getPackageInfo = require('./lib/getPackageInfo');
+const localeToI18n = require('./lib/localeToI18n');
 
 module.exports = {
   generateEntryHtml,
@@ -21,5 +22,6 @@ module.exports = {
   getNextMajorVersion: getNextVersion.major,
   getNextMinorVersion: getNextVersion.minor,
   getNextPatchVersion: getNextVersion.patch,
-  getPackageInfo
+  getPackageInfo,
+  localeToI18n
 };
