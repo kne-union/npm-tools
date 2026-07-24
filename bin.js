@@ -7,6 +7,37 @@ const downloadNpmPackage = require('@kne/fetch-npm-package');
 const {select} = require('@inquirer/prompts');
 const args = process.argv.slice(2);
 
+const printHelp = () => {
+    console.log(`Usage:
+  npx @kne/npm-tools <command> [options]
+
+Commands:
+  packageInfo <name>              获取 npm 包信息
+  latestVersion <name>            获取 npm 包最新版本号
+  nextMajorVersion                将当前项目 version 升 major 并写回 package.json
+  nextMinorVersion                将当前项目 version 升 minor 并写回 package.json
+  nextPatchVersion                将当前项目 version 升 patch 并写回 package.json
+  download <name[@version]>       下载指定 npm 包
+  deploy                          执行 manifest 部署
+  deployPackage                   执行 package 部署
+  deployProject                   执行 project 部署
+  deployPrompts [target]          执行 prompts 部署
+  localeToI18n [options]          导出 locale 为 .i18n（详见该命令 -h）
+  entryHtml                       生成入口 HTML
+  manifest                        生成 manifest
+  init <project> [template]       使用模板初始化项目
+
+Options:
+  -h, --help                      打印帮助说明
+`);
+};
+
+const isLocaleToI18n = args[0] === 'localeToI18n' || args[0] === 'locale-to-i18n';
+if (!isLocaleToI18n && (args.includes('--help') || args.includes('-h'))) {
+    printHelp();
+    process.exit(0);
+}
+
 const script = args[0];
 
 console.log(`执行命令:${script || 'entryHtml'}`);
