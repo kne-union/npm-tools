@@ -32,16 +32,22 @@
 | `deployPackage` | - | 执行 package 部署 |
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
-| `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目 `locale` 语言包导出为 IntlAdmin 可导入的 `.i18n` |
+| `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
 
 #### localeToI18n
 
-扫描 `**/locale/{zh-CN,en-US,...}.{js,json}`，按邻近 `withLocale` 的 `namespace`（缺省 `global`）合并，生成：
+扫描并合并两类语言包，按邻近 `withLocale` / `dist` 入口中的 `namespace`（缺省 `global`）生成 `.i18n`：
+
+1. 项目源码：`**/locale/{zh-CN,en-US,...}.{js,json}`
+2. `package.json` 依赖：依赖包自身含 `@kne/react-intl`，且 `dist` 下存在 `locale` 目录
+
+规则：
 
 - 文件名：`{namespace}.{locale}.i18n`
 - 正文：`code="value"`（每行一条）
 - 单文件：直接写入 `--out` 目录
 - 多文件：打包为 `{out}.zip`（如默认 `i18n-export.zip`）
+- 同 `namespace+locale+code` 冲突时，**项目源码覆盖依赖包**
 
 ```shell
 # 在项目根目录
