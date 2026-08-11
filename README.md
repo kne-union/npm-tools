@@ -1,11 +1,8 @@
-
 # npm-tools
-
 
 ### 描述
 
 发布npm包的一些工具脚本
-
 
 ### 安装
 
@@ -13,140 +10,262 @@
 npm i --save @kne/npm-tools
 ```
 
-
 ### 概述
 
-node lib 集成
+@kne/npm-tools 是一个 npm 包管理工具集，提供了一系列用于 npm 包发布、版本管理、项目初始化和部署的命令行工具。
 
-### latestVersion
+### 主要特性
 
-获取想要知道的包最后版本
+- **版本管理**：支持获取最新版本、自动递增主版本号/次版本号/修订号
+- **项目初始化**：提供多种项目模板，支持 Node.js、前端、微信小程序等多种类型项目快速创建
+- **包下载部署**：支持从 npm 下载指定包，支持 manifest 部署、package 部署、project 部署
+- **Prompts 部署**：支持按类型批量部署 prompts 包，自动拉取并整合 MD 文档
+- **入口文件生成**：自动生成带有运行时配置的入口 HTML 文件
+- **Manifest 生成**：自动生成项目清单文件和远程组件配置
 
-```shell
- npx @kne/npm-tools latestVersion @kne/mini-core 
-```
+### 使用场景
 
-output:
+- npm 包开发者进行版本管理和发布
+- 快速初始化标准化的项目模板
+- 部署远程组件和微前端应用
+- 批量管理和部署 AI Prompts 文档
+- 生成项目构建产物清单
 
-```text
-2.1.5
-```
 
-### nextMajorVersion
+### 示例
 
-在自己项目中运行。
-获取当前版本号后通过计算进行修改，比如原本版本号为 1.0.0，修改后为 2.0.0
+### API
 
-```shell
-npx @kne/npm-tools nextMajorVersion
-```
+### 命令行接口
 
-### nextMinorVersion
+#### 版本管理命令
 
-在自己项目中运行。
-获取当前版本号后通过计算进行修改，比如原本版本号为 1.0.0，修改后为 1.1.0
+| 命令 | 参数 | 说明 |
+|------|------|------|
+| `latestVersion` | `<package-name>` | 获取指定包的最新版本号 |
+| `nextMajorVersion` | - | 递增主版本号（如 1.0.0 → 2.0.0） |
+| `nextMinorVersion` | - | 递增次版本号（如 1.0.0 → 1.1.0） |
+| `nextPatchVersion` | - | 递增修订号（如 1.0.0 → 1.0.1） |
 
-```shell
-npx @kne/npm-tools nextMinorVersion
-```
+#### 包信息命令
 
-### nextPatchVersion
+| 命令 | 参数 | 说明 |
+|------|------|------|
+| `packageInfo` | `<key>` | 获取当前项目 package.json 中的字段值 |
 
-在自己项目中运行。
-获取当前版本号后通过计算进行修改，比如原本版本号为 1.0.0，修改后为 1.0.1
+**packageInfo 特殊字段说明：**
 
-```shell
-npx @kne/npm-tools nextPatchVersion
-```
+| 字段名 | 说明 |
+|--------|------|
+| `name` | 包名（不含 scope） |
+| `packageName` | 完整包名（含 scope） |
+| `packageScope` | scope 名称 |
 
-### download
+#### 下载与部署命令
 
-参考[@kne/fetch-npm-package](https://www.kne-union.top/#/node-libs/fetch-npm-package)
+| 命令 | 参数 | 说明 |
+|------|------|------|
+| `download` | `<npm-package-name>` | 下载指定的 npm 包 |
+| `deploy` | - | 执行 manifest 部署 |
+| `deployPackage` | - | 执行 package 部署 |
+| `deployProject` | - | 执行 project 部署 |
+| `deployPrompts` | `[type]` | 部署 prompts 文档 |
+| `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
 
-```shell
-npx @kne/npm-tools download [npm-package-name]
-```
+#### localeToI18n
 
-### entryHtml
+扫描并合并两类语言包，按邻近 `withLocale` / `dist` 入口中的 `namespace`（缺省 `global`）生成 `.i18n`：
 
-1. 获取环境变量中的 部署地址（DEPLOY_URL）、APP_NAME、VERSION
-2. 将 [APP_NAME]、"static/js"、"remoteEntry.js" 匹配为 URL 
-3. 获取入口文件，创建一个新的 DOM 环境，并在其中加载刚获取到的入口文件内容 
-4. 拿到 dom 环境的 window，将匹配的 URL 转换到 window 的 head 中
-5. 生成 script 标签，声明 runtimeAppName、runtimePublicUrl 以及 runtimeEnv 参数并赋值
-6. 将 dom 序列化后的内容写入口文件
+1. 项目源码：`**/locale/{zh-CN,en-US,...}.{js,json}`
+2. `package.json` 依赖：依赖包自身含 `@kne/react-intl`，且 `dist` 下存在 `locale` 目录
 
-```shell
-npx @kne/npm-tools entryHtml
-```
+规则：
 
-### manifest
-1. 获取导出地址
-2. 创建 readme 和 list 文件夹
-3. 读取配置文件信息并返回新的数据
-    * 当前目录下，读取环境变量中的 [MANIFEST_FILE] 文件或者 package.json 配置文件
-    * 将文件内容的 manifest-config 数据重新循环，获取配置中的包名在 npm 中的信息，配置生成新的数据
-4. 定义 readme json 数据集合
-5. 将获取到的数据转换，生成新的 manifest.json 文件，并将定义路径和数据放入 readme 数据集合中
-6. 将获取到的数据转换中所有远程加载的包写入 remote-components.json 中
-7. 将 readme 数据集合中的数据分类写入 readme 文件夹内 
-8. 将 readme 数据集合中的数据写入 list 文件夹内
-
-***list 文件夹主要储存从 npm 中获取到的包数据***
-***readme 文件夹主要储存每个库中包的 readme 文件数据***
+- 文件名：`{namespace}.{locale}.i18n`
+- 正文：`code="value"`（每行一条）
+- 单文件：直接写入 `--out` 目录
+- 多文件：打包为 `{out}.zip`（如默认 `i18n-export.zip`）
+- 同 `namespace+locale+code` 冲突时，**项目源码覆盖依赖包**
 
 ```shell
-npx @kne/npm-tools manifest
+# 在项目根目录
+npx @kne/npm-tools localeToI18n
+
+# 指定目录（例：telent-coach）
+npx @kne/npm-tools localeToI18n --root /path/to/telent-coach --out /path/to/telent-coach/i18n-export
+
+# 兼容位置参数
+npx @kne/npm-tools localeToI18n /path/to/telent-coach ./i18n-export
+
+# 包含 server/ 下 locale
+npx @kne/npm-tools localeToI18n --include-server
+
+# 只预览不写文件
+npx @kne/npm-tools localeToI18n --dry-run
 ```
 
-### init
+#### deployPrompts 类型参数
 
-可以使用 npm-tools 创建一个预置的模板项目
+| 类型值 | 说明 |
+|--------|------|
+| `frontend-libs` | 前端库 prompts |
+| `frontend-remote-components` | 前端远程组件 prompts |
+| `frontend-project` | 前端项目 prompts |
+| `node-libs` | Node.js 库 prompts |
+| `fastify-libs` | Fastify 库 prompts |
+| `fastify-project` | Fastify 项目 prompts |
+| `other` | 自定义包名（交互式输入） |
 
-```shell
-npx @kne/npm-tools init [project-name] [template-name]
-```
+#### 项目初始化命令
 
-模板的 `prompts.json` 支持通过 `when` 根据前序答案控制是否提问：
+| 命令 | 参数 | 说明 |
+|------|------|------|
+| `init` | `<project-name> [template]` | 初始化项目 |
+
+模板 `prompts.json` 中的每个问题可声明 `when`，根据已回答的问题决定是否继续提问：
 
 ```json
 {
-  "name": "tenantAdminLayout",
+  "name": "clientLayout",
   "type": "select",
   "when": {
-    "name": "includeTenantAdmin",
+    "name": "includeClient",
     "equals": true
   },
   "options": {
-    "message": "Tenant Admin 使用哪种布局？",
+    "message": "Client 使用哪种布局？",
     "default": "system-layout"
   }
 }
 ```
 
-`when` 支持字段名字符串、`equals`、`notEquals`、`includes`，以及 `all` / `any` 组合条件。条件不满足时不会提问；若配置了顶层 `default` 或 `options.default`，该值仍会传给模板渲染。
+条件支持：
 
-project-name 必填，为创建的项目名，template-name 可选，没有指定的时候会有以下六种模板可供选择，指定的话（如：cra-template）将会使用指定的模板进行创建
+- `"when": "fieldName"`：字段值为真时提问
+- `{ "name": "fieldName", "equals": value }`
+- `{ "name": "fieldName", "notEquals": value }`
+- `{ "name": "fieldName", "includes": [value1, value2] }`
+- `{ "all": [...] }` / `{ "any": [...] }`：组合多个条件
 
-共有六种模板类型可供选择
+条件不满足时会使用问题顶层 `default` 或 `options.default` 作为模板参数（若已配置）。
 
-- NodeJS Libs [@kne-template/node](https://npmmirror.com/package/@kne-template/node)
-- Frontend Libs [@kne-template/libs](https://npmmirror.com/package/@kne-template/libs)
-- Remote Components [@kne-template/remote](https://npmmirror.com/package/@kne-template/remote)
-- Business Project [@kne-template/project](https://npmmirror.com/package/@kne-template/project)
-- Fullstack Biz App [@kne-template/fullstack-biz-app](https://npmmirror.com/package/@kne-template/fullstack-biz-app)
-- WeChat Miniprogram Libs [@kne-template/miniprogram-libs](https://npmmirror.com/package/@kne-template/miniprogram-libs)
-- WeChat Miniprogram
-  Project [@kne-template/miniprogram-project](https://npmmirror.com/package/@kne-template/miniprogram-project)
+**可选模板列表：**
 
+| 模板名称 | 包名 | 说明 |
+|----------|------|------|
+| NodeJS Libs | `@kne-template/node` | Node.js 库模板 |
+| Fastify Server Project | `@kne-template/fastify-server` | Fastify 服务端项目 |
+| Fastify Libs | `@kne-template/fastify-libs` | Fastify 库模板 |
+| Fastify Business Project | `@kne-template/fastify-app` | Fastify 业务项目 |
+| Fullstack Biz App | `@kne-template/fullstack-biz-app` | 全栈 BizUnit 业务项目（可选 Tenant/客户端） |
+| Frontend Libs | `@kne-template/libs` | 前端库模板 |
+| Remote Components | `@kne-template/remote` | 远程组件模板 |
+| Business Project | `@kne-template/project` | 业务项目模板 |
+| WeChat Miniprogram Libs | `@kne-template/miniprogram-libs` | 微信小程序库模板 |
+| WeChat Miniprogram Project | `@kne-template/miniprogram-project` | 微信小程序项目模板 |
 
+#### 其他命令
 
-### 示例
+| 命令 | 参数 | 说明 |
+|------|------|------|
+| `entryHtml` | - | 生成入口 HTML 文件 |
+| `manifest` | - | 生成 manifest 清单文件 |
 
-#### 示例代码
+本地单元测试：`npm test`（mocha，匹配 `test/**/*.test.js`）。PR 与发布流水线会执行该命令。
 
+---
 
+### 程序化 API
 
-### API
+#### 导出方法
 
-发布npm包的一些工具脚本
+| 方法名 | 参数 | 返回值 | 说明 |
+|--------|------|--------|------|
+| `getLatestVersion(name)` | `name: string` | `Promise<string>` | 获取包最新版本 |
+| `getNextMajorVersion()` | - | `Promise<string>` | 获取下一个主版本号 |
+| `getNextMinorVersion()` | - | `Promise<string>` | 获取下一个次版本号 |
+| `getNextPatchVersion()` | - | `Promise<string>` | 获取下一个修订号 |
+| `getPackageInfo(key)` | `key: string` | `Promise<any>` | 获取 package.json 字段 |
+| `initProject(name, template, version)` | - | `Promise<void>` | 初始化项目 |
+| `deployPrompts(type)` | `type: string` | `Promise<void>` | 部署 prompts |
+| `generateEntryHtml()` | - | `Promise<void>` | 生成入口 HTML |
+| `generateManifest()` | - | `Promise<void>` | 生成 manifest |
+| `deployManifest()` | - | `Promise<void>` | 部署 manifest |
+| `deployPackage()` | - | `Promise<void>` | 部署 package |
+| `deployProject()` | - | `Promise<void>` | 部署 project |
+| `getRemoteModuleDocument(remote)` | `remote: { url, remote, tpl?, defaultVersion?, version? }` | `Promise<object>` | 用 remote-loader 解析部署地址并拉取 README.md |
+| `getNpmPackageDocument(name)` | `name: string` | `Promise<object>` | 用 load-npm-info 获取 npm 包 README.md |
+| `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
+| `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
+| `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
+
+#### 文档索引目录
+
+环境变量 `KNE_DOCUMENT_INDEXED_DIR`；未设置时为 `~/.kne_document_indexed`。目录不存在会自动创建。
+
+落盘结构：`{root}/{id}/{version}/{meta,index,components}.json`（切分逻辑对齐 `fastify-live-components-site` 的 catalog）。
+
+#### 使用示例
+
+```javascript
+const npmTool = require('@kne/npm-tools');
+
+// 获取最新版本
+const version = await npmTool.getLatestVersion('@kne/mini-core');
+
+// 初始化项目
+await npmTool.initProject('my-project', '@kne-template/libs');
+
+// 部署 prompts
+await npmTool.deployPrompts('frontend-libs');
+
+// 远程组件文档
+const remoteDoc = await npmTool.getRemoteModuleDocument({
+  url: 'https://cdn.leapin-ai.com',
+  tpl: '{{url}}/components/@kne-components/{{remote}}/{{version}}/build',
+  remote: 'components-core',
+  defaultVersion: '0.5.33'
+});
+await npmTool.buildDocumentIndex({
+  id: remoteDoc.remote,
+  version: remoteDoc.version,
+  readme: remoteDoc.readme,
+  readmeUrl: remoteDoc.readmeUrl,
+  source: 'remote'
+});
+
+// npm 包文档
+const npmDoc = await npmTool.getNpmPackageDocument('@kne/md-doc');
+await npmTool.buildDocumentIndex({
+  id: npmDoc.packageName,
+  version: npmDoc.version,
+  packageName: npmDoc.packageName,
+  readme: npmDoc.readme,
+  source: 'npm'
+});
+```
+
+---
+
+### deployPrompts 输出结构
+
+```
+prompts/
+├── prompts.json          # 部署记录（包名: 版本号）
+├── prompts-libs/         # 按包名（不含 scope）组织
+│   ├── README.md
+│   └── *.md
+├── prompts-remote-components/
+│   ├── README.md
+│   └── *.md
+└── ...
+```
+
+**prompts.json 结构：**
+
+```json
+{
+  "@kne/prompts-libs": "1.0.0",
+  "@kne/prompts-remote-components": "2.1.0"
+}
+```

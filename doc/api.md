@@ -133,6 +133,8 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `entryHtml` | - | 生成入口 HTML 文件 |
 | `manifest` | - | 生成 manifest 清单文件 |
 
+本地单元测试：`npm test`（mocha，匹配 `test/**/*.test.js`）。PR 与发布流水线会执行该命令。
+
 ---
 
 ### 程序化 API
@@ -153,6 +155,17 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `deployManifest()` | - | `Promise<void>` | 部署 manifest |
 | `deployPackage()` | - | `Promise<void>` | 部署 package |
 | `deployProject()` | - | `Promise<void>` | 部署 project |
+| `getRemoteModuleDocument(remote)` | `remote: { url, remote, tpl?, defaultVersion?, version? }` | `Promise<object>` | 用 remote-loader 解析部署地址并拉取 README.md |
+| `getNpmPackageDocument(name)` | `name: string` | `Promise<object>` | 用 load-npm-info 获取 npm 包 README.md |
+| `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
+| `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
+| `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
+
+#### 文档索引目录
+
+环境变量 `KNE_DOCUMENT_INDEXED_DIR`；未设置时为 `~/.kne_document_indexed`。目录不存在会自动创建。
+
+落盘结构：`{root}/{id}/{version}/{meta,index,components}.json`（切分逻辑对齐 `fastify-live-components-site` 的 catalog）。
 
 #### 使用示例
 
@@ -167,6 +180,31 @@ await npmTool.initProject('my-project', '@kne-template/libs');
 
 // 部署 prompts
 await npmTool.deployPrompts('frontend-libs');
+
+// 远程组件文档
+const remoteDoc = await npmTool.getRemoteModuleDocument({
+  url: 'https://cdn.leapin-ai.com',
+  tpl: '{{url}}/components/@kne-components/{{remote}}/{{version}}/build',
+  remote: 'components-core',
+  defaultVersion: '0.5.33'
+});
+await npmTool.buildDocumentIndex({
+  id: remoteDoc.remote,
+  version: remoteDoc.version,
+  readme: remoteDoc.readme,
+  readmeUrl: remoteDoc.readmeUrl,
+  source: 'remote'
+});
+
+// npm 包文档
+const npmDoc = await npmTool.getNpmPackageDocument('@kne/md-doc');
+await npmTool.buildDocumentIndex({
+  id: npmDoc.packageName,
+  version: npmDoc.version,
+  packageName: npmDoc.packageName,
+  readme: npmDoc.readme,
+  source: 'npm'
+});
 ```
 
 ---

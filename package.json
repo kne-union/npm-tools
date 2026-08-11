@@ -1,6 +1,6 @@
 {
   "name": "@kne/npm-tools",
-  "version": "0.1.57",
+  "version": "0.1.58",
   "description": "发布npm包的一些工具脚本",
   "files": [
     "lib",
@@ -15,6 +15,7 @@
     "init": "husky",
     "build:md": "npx @kne/md-doc",
     "start:md": "npx @kne/md-doc --watch",
+    "test": "mocha 'test/**/*.test.js'",
     "prettier": "prettier --config .prettierrc --write '{libs/**/*,index}.{js,jsx,ts,tsx,json,css,scss}'",
     "lint-staged": "npx lint-staged"
   },
@@ -38,6 +39,7 @@
     "@kne/fetch-npm-package": "^0.1.4",
     "@kne/load-npm-info": "^0.1.7",
     "@kne/md-doc": "^0.1.8",
+    "@kne/remote-loader": "^1.4.6",
     "cross-spawn-promise": "^0.10.2",
     "fs-extra": "^11.2.0",
     "jsdom": "^24.0.0",
@@ -49,6 +51,7 @@
     "ejs": "^3.1.10",
     "glob": "^10.3.10",
     "husky": "^9.0.11",
+    "mocha": "^11.8.0",
     "prettier": "^3.2.5",
     "text-extensions": "^2.4.0"
   }
