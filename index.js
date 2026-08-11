@@ -9,6 +9,10 @@ const deployProject = require('./lib/deployProject');
 const deployPrompts = require('./lib/deployPrompts');
 const getPackageInfo = require('./lib/getPackageInfo');
 const localeToI18n = require('./lib/localeToI18n');
+const getRemoteModuleDocument = require('./lib/getRemoteModuleDocument');
+const getNpmPackageDocument = require('./lib/getNpmPackageDocument');
+const buildDocumentIndex = require('./lib/buildDocumentIndex');
+const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
 
 module.exports = {
   generateEntryHtml,
@@ -23,5 +27,10 @@ module.exports = {
   getNextMinorVersion: getNextVersion.minor,
   getNextPatchVersion: getNextVersion.patch,
   getPackageInfo,
-  localeToI18n
+  localeToI18n,
+  getRemoteModuleDocument,
+  getNpmPackageDocument,
+  buildDocumentIndex,
+  getDocumentIndexDir,
+  buildCatalogFromReadme: buildDocumentIndex.buildCatalogFromReadme
 };

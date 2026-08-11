@@ -11,3 +11,6 @@ jobs:
     secrets: inherit
     with:
       package_name: '@kne/npm-tools'
+      run_test: true
+      install-command: npm install
+      test-command: npm test
