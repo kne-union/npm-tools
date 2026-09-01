@@ -13,6 +13,7 @@ const getRemoteModuleDocument = require('./lib/getRemoteModuleDocument');
 const getNpmPackageDocument = require('./lib/getNpmPackageDocument');
 const buildDocumentIndex = require('./lib/buildDocumentIndex');
 const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
+const initDevDocumentMcp = require('./lib/initDevDocumentMcp');
 
 module.exports = {
   generateEntryHtml,
@@ -32,5 +33,6 @@ module.exports = {
   getNpmPackageDocument,
   buildDocumentIndex,
   getDocumentIndexDir,
+  initDevDocumentMcp,
   buildCatalogFromReadme: buildDocumentIndex.buildCatalogFromReadme
 };

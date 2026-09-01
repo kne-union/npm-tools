@@ -33,6 +33,15 @@
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
+| `initDevDocumentMcp` | `[--target] [--api-url] [--token]` | 初始化 developer-document MCP，并写入 `~/.kne_document/config.json` |
+
+#### initDevDocumentMcp
+
+| 选项 | 说明 |
+|------|------|
+| `--target` | MCP 安装目标，目前支持 `cursor`；省略时交互选择 |
+| `--api-url` | API 根地址，如 `http://localhost:8061/api/v1` |
+| `--token` | 登录 token |
 
 #### localeToI18n
 
@@ -160,6 +169,7 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
 | `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
 | `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
+| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt? }` | `Promise<object>` | 写入 kne_document 配置并安装 MCP |
 
 #### 文档索引目录
 

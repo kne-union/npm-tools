@@ -26,6 +26,7 @@ Commands:
   entryHtml                       生成入口 HTML
   manifest                        生成 manifest
   init <project> [template]       使用模板初始化项目
+  initDevDocumentMcp [options]    初始化 developer-document MCP 与 ~/.kne_document/config.json
 
 Options:
   -h, --help                      打印帮助说明
@@ -33,7 +34,8 @@ Options:
 };
 
 const isLocaleToI18n = args[0] === 'localeToI18n' || args[0] === 'locale-to-i18n';
-if (!isLocaleToI18n && (args.includes('--help') || args.includes('-h'))) {
+const isInitDevDocumentMcp = args[0] === 'initDevDocumentMcp';
+if (!isLocaleToI18n && !isInitDevDocumentMcp && (args.includes('--help') || args.includes('-h'))) {
     printHelp();
     process.exit(0);
 }
@@ -120,6 +122,14 @@ switch (script) {
     console.log('导出 locale 为 .i18n');
     npmTool.localeToI18n(args.slice(1)).catch((err) => {
       throw err;
+    });
+    break;
+  case 'initDevDocumentMcp':
+    (async () => {
+      await npmTool.initDevDocumentMcp(args.slice(1), { prompt: select });
+    })().catch(err => {
+      console.error(err.message || err);
+      process.exit(1);
     });
     break;
     case 'entryHtml':
