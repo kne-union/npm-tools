@@ -14,6 +14,7 @@ const getNpmPackageDocument = require('./lib/getNpmPackageDocument');
 const buildDocumentIndex = require('./lib/buildDocumentIndex');
 const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
 const initDevDocumentMcp = require('./lib/initDevDocumentMcp');
+const kneDocumentSync = require('./lib/kneDocumentSync');
 
 module.exports = {
   generateEntryHtml,
@@ -34,5 +35,6 @@ module.exports = {
   buildDocumentIndex,
   getDocumentIndexDir,
   initDevDocumentMcp,
+  kneDocumentSync,
   buildCatalogFromReadme: buildDocumentIndex.buildCatalogFromReadme
 };
