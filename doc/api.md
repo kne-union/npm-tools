@@ -33,7 +33,7 @@
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
-| `initDevDocumentMcp` | `[--target] [--api-url] [--token]` | 初始化 developer-document MCP，并写入 `~/.kne_document/config.json` |
+| `initDevDocumentMcp` | `[--target] [--api-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
 
 #### initDevDocumentMcp
 
@@ -42,6 +42,10 @@
 | `--target` | MCP 安装目标，目前支持 `cursor`；省略时交互选择 |
 | `--api-url` | API 根地址，如 `http://localhost:8061/api/v1` |
 | `--token` | 登录 token |
+| `--skip-sync` | 跳过初始化后的本地数据同步 |
+| `--dry-run` | 仅预览待同步文件 |
+
+初始化完成后会检查 `~/.kne_document/worklog` / `experience` 下 JSON，按 `sync-registry.json` 上传尚未同步的条目。
 
 #### localeToI18n
 
