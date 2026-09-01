@@ -117,7 +117,7 @@ describe('initDevDocumentMcp', () => {
 
   it('initDevDocumentMcp 应同时写入 kne_document 与 cursor MCP 配置', async () => {
     const result = await initDevDocumentMcp(
-      ['--target', 'cursor', '--api-url', 'http://localhost:8061/api/v1', '--token', 'token-value'],
+      ['--target', 'cursor', '--api-url', 'http://localhost:8061/api/v1', '--token', 'token-value', '--skip-sync'],
       { homedir: tempHome }
     );
 
@@ -129,6 +129,34 @@ describe('initDevDocumentMcp', () => {
     const mcpConfig = await fs.readJson(result.mcpConfigPath);
     assert.equal(kneConfig.remote.token, 'token-value');
     assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].url, 'http://localhost:8061/api/v1/mcp');
+  });
+
+  it('initDevDocumentMcp 有待同步文件时应触发 syncAll', async () => {
+    const filePath = path.join(tempHome, '.kne_document', 'worklog', 'demo', '2026-01-01-12-00-00', 'title.json');
+    await fs.ensureDir(path.dirname(filePath));
+    await fs.writeJson(filePath, { title: 'demo' });
+
+    let uploadCount = 0;
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ code: 0, data: { action: 'created' } })
+    });
+
+    const result = await initDevDocumentMcp(
+      ['--target', 'cursor', '--api-url', 'http://localhost:8061/api/v1', '--token', 'token-value'],
+      {
+        homedir: tempHome,
+        fetchImpl: async (...args) => {
+          uploadCount += 1;
+          return fetchImpl(...args);
+        },
+        logger: () => {}
+      }
+    );
+
+    assert.equal(result.syncSummary.synced, 1);
+    assert.ok(uploadCount >= 1);
   });
 
   it('installMcpTarget 对未知 target 应抛错', async () => {
