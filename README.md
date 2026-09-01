@@ -71,7 +71,7 @@ npm i --save @kne/npm-tools
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
-| `initDevDocumentMcp` | `[--target] [--api-url] [--token]` | 初始化 developer-document MCP，并写入 `~/.kne_document/config.json` |
+| `initDevDocumentMcp` | `[--target] [--api-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
 
 #### initDevDocumentMcp
 
@@ -82,6 +82,8 @@ npm i --save @kne/npm-tools
 | `--target` | MCP 安装目标，目前支持 `cursor`（合并到 `~/.cursor/mcp.json`）；省略时交互选择 |
 | `--api-url` | 开发者文档服务 API 根地址，如 `http://localhost:8061/api/v1` |
 | `--token` | 登录 token（`x-user-token`） |
+| `--skip-sync` | 跳过初始化后的本地 worklog / experience 同步 |
+| `--dry-run` | 仅预览待同步文件，不实际上传 |
 
 ```shell
 npx @kne/npm-tools initDevDocumentMcp \
@@ -89,6 +91,8 @@ npx @kne/npm-tools initDevDocumentMcp \
   --api-url http://localhost:8061/api/v1 \
   --token "<登录 token>"
 ```
+
+初始化完成后会自动检查 `~/.kne_document/worklog` 与 `experience` 下是否有待同步 JSON；若有则按 `sync-registry.json` 规则上传。
 
 #### localeToI18n
 
@@ -216,12 +220,14 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
 | `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
 | `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
-| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt? }` | `Promise<object>` | 写入 kne_document 配置并安装 MCP（见下） |
+| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt?, fetchImpl?, logger? }` | `Promise<object>` | 写入 kne_document 配置、安装 MCP，并同步待上传数据 |
+| `kneDocumentSync.*` | 见 `lib/kneDocumentSync.js` | - | 本地 kne_document 与服务端同步 |
 
 #### initDevDocumentMcp
 
 - 写入 `~/.kne_document/config.json`：`remote.apiUrl` + `token`
 - `--target cursor`：合并 `developer-document` 到 `~/.cursor/mcp.json` 的 `mcpServers`
+- 初始化后自动检查本地 worklog / experience 待同步项并上传（可用 `--skip-sync` 跳过）
 - 已有配置会保留并合并，不会覆盖其它 MCP 服务
 
 #### 文档索引目录
