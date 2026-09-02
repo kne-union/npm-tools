@@ -33,17 +33,20 @@
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
-| `initDevDocumentMcp` | `[--target] [--api-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
+| `initDevDocumentMcp` | `[--target] [--sync-url] [--mcp-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
 
 #### initDevDocumentMcp
 
 | 选项 | 说明 |
 |------|------|
 | `--target` | MCP 安装目标，目前支持 `cursor`；省略时交互选择 |
-| `--api-url` | API 根地址，如 `http://localhost:8061/api/v1` |
+| `--sync-url` | worklog / experience 同步 API 根地址 |
+| `--mcp-url` | HTTP MCP 端点完整地址；省略时为 `<sync-url>/mcp` |
 | `--token` | 登录 token |
 | `--skip-sync` | 跳过初始化后的本地数据同步 |
 | `--dry-run` | 仅预览待同步文件 |
+
+`--api-url` 仍可作为 `--sync-url` 的兼容别名。
 
 初始化完成后会检查 `~/.kne_document/worklog` / `experience` 下 JSON，按 `sync-registry.json` 上传尚未同步的条目。
 

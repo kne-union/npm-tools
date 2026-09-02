@@ -6,13 +6,17 @@ const initDevDocumentMcp = require('../lib/initDevDocumentMcp');
 
 const {
   parseArgs,
-  normalizeApiUrl,
+  normalizeUrl,
+  resolveInitUrls,
   buildMcpServerEntry,
   writeKneDocumentConfig,
   mergeMcpConfigFile,
   installMcpTarget,
   MCP_SERVER_ID
 } = initDevDocumentMcp;
+
+const SYNC_URL = 'http://localhost:8061/api/v1';
+const MCP_URL = 'http://localhost:8061/api/v1/mcp';
 
 describe('initDevDocumentMcp', () => {
   let tempHome;
@@ -25,32 +29,47 @@ describe('initDevDocumentMcp', () => {
     await fs.remove(tempHome);
   });
 
-  it('parseArgs 应解析 target/api-url/token', () => {
+  it('parseArgs 应解析 target/sync-url/mcp-url/token', () => {
     const args = parseArgs([
       '--target',
       'cursor',
-      '--api-url',
-      'http://localhost:8061/api/v1',
+      '--sync-url',
+      SYNC_URL,
+      '--mcp-url',
+      MCP_URL,
       '--token',
       'abc123'
     ]);
     assert.equal(args.target, 'cursor');
-    assert.equal(args.apiUrl, 'http://localhost:8061/api/v1');
+    assert.equal(args.syncUrl, SYNC_URL);
+    assert.equal(args.mcpUrl, MCP_URL);
     assert.equal(args.token, 'abc123');
   });
 
-  it('normalizeApiUrl 应去掉末尾斜杠', () => {
-    assert.equal(normalizeApiUrl('http://localhost:8061/api/v1/'), 'http://localhost:8061/api/v1');
+  it('parseArgs 应将 --api-url 视为 --sync-url 兼容别名', () => {
+    const args = parseArgs(['--api-url', SYNC_URL]);
+    assert.equal(args.syncUrl, SYNC_URL);
   });
 
-  it('buildMcpServerEntry 应生成 HTTP MCP 配置', () => {
+  it('normalizeUrl 应去掉末尾斜杠', () => {
+    assert.equal(normalizeUrl(`${SYNC_URL}/`, '--sync-url'), SYNC_URL);
+  });
+
+  it('resolveInitUrls 在未传 mcp-url 时应默认 sync-url/mcp', () => {
+    assert.deepEqual(resolveInitUrls({ syncUrl: SYNC_URL, mcpUrl: '' }), {
+      syncUrl: SYNC_URL,
+      mcpUrl: MCP_URL
+    });
+  });
+
+  it('buildMcpServerEntry 应使用完整 mcp-url', () => {
     assert.deepEqual(
       buildMcpServerEntry({
-        apiUrl: 'http://localhost:8061/api/v1',
+        mcpUrl: MCP_URL,
         token: 'token-value'
       }),
       {
-        url: 'http://localhost:8061/api/v1/mcp',
+        url: MCP_URL,
         headers: {
           'x-user-token': 'token-value'
         }
@@ -60,7 +79,8 @@ describe('initDevDocumentMcp', () => {
 
   it('writeKneDocumentConfig 应写入 ~/.kne_document/config.json', async () => {
     const configPath = await writeKneDocumentConfig({
-      apiUrl: 'http://localhost:8061/api/v1',
+      syncUrl: SYNC_URL,
+      mcpUrl: MCP_URL,
       token: 'token-value',
       homedir: tempHome
     });
@@ -68,7 +88,9 @@ describe('initDevDocumentMcp', () => {
     assert.equal(configPath, path.join(tempHome, '.kne_document', 'config.json'));
     const config = await fs.readJson(configPath);
     assert.deepEqual(config.remote, {
-      apiUrl: 'http://localhost:8061/api/v1',
+      syncUrl: SYNC_URL,
+      mcpUrl: MCP_URL,
+      apiUrl: SYNC_URL,
       token: 'token-value'
     });
   });
@@ -79,7 +101,8 @@ describe('initDevDocumentMcp', () => {
     await fs.writeJson(configPath, { lastSyncAt: '2026-01-01T00:00:00.000Z', remote: { apiUrl: 'old' } });
 
     await writeKneDocumentConfig({
-      apiUrl: 'http://localhost:8061/api/v1',
+      syncUrl: SYNC_URL,
+      mcpUrl: MCP_URL,
       token: 'new-token',
       homedir: tempHome
     });
@@ -87,7 +110,9 @@ describe('initDevDocumentMcp', () => {
     const config = await fs.readJson(configPath);
     assert.equal(config.lastSyncAt, '2026-01-01T00:00:00.000Z');
     assert.deepEqual(config.remote, {
-      apiUrl: 'http://localhost:8061/api/v1',
+      syncUrl: SYNC_URL,
+      mcpUrl: MCP_URL,
+      apiUrl: SYNC_URL,
       token: 'new-token'
     });
   });
@@ -103,32 +128,36 @@ describe('initDevDocumentMcp', () => {
 
     await mergeMcpConfigFile({
       configPath,
-      apiUrl: 'http://localhost:8061/api/v1',
+      mcpUrl: MCP_URL,
       token: 'token-value'
     });
 
     const config = await fs.readJson(configPath);
     assert.deepEqual(config.mcpServers.figma, { url: 'https://mcp.figma.com/mcp' });
     assert.deepEqual(config.mcpServers[MCP_SERVER_ID], {
-      url: 'http://localhost:8061/api/v1/mcp',
+      url: MCP_URL,
       headers: { 'x-user-token': 'token-value' }
     });
   });
 
   it('initDevDocumentMcp 应同时写入 kne_document 与 cursor MCP 配置', async () => {
     const result = await initDevDocumentMcp(
-      ['--target', 'cursor', '--api-url', 'http://localhost:8061/api/v1', '--token', 'token-value', '--skip-sync'],
+      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync'],
       { homedir: tempHome }
     );
 
     assert.equal(result.target, 'cursor');
+    assert.equal(result.syncUrl, SYNC_URL);
+    assert.equal(result.mcpUrl, MCP_URL);
     assert.equal(result.configPath, path.join(tempHome, '.kne_document', 'config.json'));
     assert.equal(result.mcpConfigPath, path.join(tempHome, '.cursor', 'mcp.json'));
 
     const kneConfig = await fs.readJson(result.configPath);
     const mcpConfig = await fs.readJson(result.mcpConfigPath);
+    assert.equal(kneConfig.remote.syncUrl, SYNC_URL);
+    assert.equal(kneConfig.remote.mcpUrl, MCP_URL);
     assert.equal(kneConfig.remote.token, 'token-value');
-    assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].url, 'http://localhost:8061/api/v1/mcp');
+    assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].url, MCP_URL);
   });
 
   it('initDevDocumentMcp 有待同步文件时应触发 syncAll', async () => {
@@ -144,7 +173,7 @@ describe('initDevDocumentMcp', () => {
     });
 
     const result = await initDevDocumentMcp(
-      ['--target', 'cursor', '--api-url', 'http://localhost:8061/api/v1', '--token', 'token-value'],
+      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value'],
       {
         homedir: tempHome,
         fetchImpl: async (...args) => {
@@ -164,7 +193,7 @@ describe('initDevDocumentMcp', () => {
       () =>
         installMcpTarget({
           target: 'unknown',
-          apiUrl: 'http://localhost:8061/api/v1',
+          mcpUrl: MCP_URL,
           token: 'token-value',
           homedir: tempHome
         }),
