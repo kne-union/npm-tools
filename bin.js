@@ -44,7 +44,10 @@ if (!isLocaleToI18n && !isInitDevDocumentMcp && !isGenerateOpenApiSignature && (
 
 const script = args[0];
 
-console.log(`执行命令:${script || 'entryHtml'}`);
+const QUIET_STDOUT_COMMANDS = new Set(['generateOpenApiSignature', 'packageInfo', 'latestVersion']);
+if (!QUIET_STDOUT_COMMANDS.has(script)) {
+  console.log(`执行命令:${script || 'entryHtml'}`);
+}
 
 const writeToPackageJson = async (func) => {
     const packageJsonPath = path.resolve(process.cwd(), 'package.json');
