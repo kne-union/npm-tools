@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const generateOpenApiSignature = require('../lib/generateOpenApiSignature');
 
 describe('generateOpenApiSignature', () => {
@@ -48,13 +50,15 @@ describe('generateOpenApiSignature', () => {
         {
           appId: 'cli-id',
           appSecret: 'cli-secret',
-          expireInSeconds: 600
+          expireInSeconds: 600,
+          output: 'export-env'
         }
       );
       assert.deepEqual(generateOpenApiSignature.parseArgs([]), {
         appId: 'from-env-id',
         appSecret: 'from-env-secret',
-        expireInSeconds: generateOpenApiSignature.DEFAULT_EXPIRE_SECONDS
+        expireInSeconds: generateOpenApiSignature.DEFAULT_EXPIRE_SECONDS,
+        output: 'export-env'
       });
     } finally {
       if (previousAppId === undefined) {
@@ -70,7 +74,46 @@ describe('generateOpenApiSignature', () => {
     }
   });
 
-  it('CLI stdout 应仅为 JSON（供 CI HEADERS_JSON=$(npx ...) 解析）', () => {
+  it('formatExportEnv 应输出可 eval 的 export 语句', () => {
+    const result = generateOpenApiSignature({ appId, appSecret, expireInSeconds, now });
+    const stdout = generateOpenApiSignature.formatExportEnv(result);
+
+    assert.match(stdout, /^export OPENAPI_TIMESTAMP='/);
+    assert.match(stdout, /export OPENAPI_SIGNATURE='/);
+
+    const env = {};
+    stdout.split('\n').forEach(line => {
+      // eslint-disable-next-line no-eval
+      eval(`${line.replace(/^export /, 'env.')}`);
+    });
+
+    assert.equal(env.OPENAPI_TIMESTAMP, String(result.timestamp));
+    assert.equal(env.OPENAPI_EXPIRE, String(result.expire));
+    assert.equal(env.OPENAPI_SIGNATURE, result.signature);
+  });
+
+  it('writeGithubEnv 应写入 GITHUB_ENV 文件', () => {
+    const githubEnvPath = path.join(os.tmpdir(), `openapi-github-env-${Date.now()}`);
+    const previousGithubEnv = process.env.GITHUB_ENV;
+    process.env.GITHUB_ENV = githubEnvPath;
+
+    try {
+      const result = generateOpenApiSignature({ appId, appSecret, expireInSeconds, now });
+      generateOpenApiSignature.writeGithubEnv(result);
+      const content = fs.readFileSync(githubEnvPath, 'utf8');
+      assert.match(content, /OPENAPI_TIMESTAMP=\d+/);
+      assert.match(content, /OPENAPI_SIGNATURE=[0-9a-f]+/);
+    } finally {
+      fs.rmSync(githubEnvPath, { force: true });
+      if (previousGithubEnv === undefined) {
+        delete process.env.GITHUB_ENV;
+      } else {
+        process.env.GITHUB_ENV = previousGithubEnv;
+      }
+    }
+  });
+
+  it('CLI 默认输出 export 语句', () => {
     const bin = path.join(__dirname, '../bin.js');
     const stdout = execFileSync(
       process.execPath,
@@ -78,7 +121,18 @@ describe('generateOpenApiSignature', () => {
       { encoding: 'utf8' }
     );
 
-    assert.equal(stdout.trim().split('\n').length, 1);
+    assert.match(stdout, /export OPENAPI_TIMESTAMP='/);
+    assert.doesNotMatch(stdout, /执行命令:/);
+  });
+
+  it('CLI --json 应输出 JSON', () => {
+    const bin = path.join(__dirname, '../bin.js');
+    const stdout = execFileSync(
+      process.execPath,
+      [bin, 'generateOpenApiSignature', '--app-id', 'test-id', '--app-secret', 'test-secret', '--json'],
+      { encoding: 'utf8' }
+    );
+
     const parsed = JSON.parse(stdout.trim());
     assert.ok(parsed.headers['x-openapi-signature']);
   });

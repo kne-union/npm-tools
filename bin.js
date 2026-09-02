@@ -27,7 +27,7 @@ Commands:
   manifest                        生成 manifest
   init <project> [template]       使用模板初始化项目
   initDevDocumentMcp [options]    初始化 developer-document MCP 与 ~/.kne_document/config.json
-  generateOpenApiSignature [opts] 生成 developer-document Open API 签名参数（JSON）
+  generateOpenApiSignature [opts] 生成 Open API 签名并写入环境变量
 
 Options:
   -h, --help                      打印帮助说明
