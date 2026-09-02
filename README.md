@@ -72,6 +72,25 @@ npm i --save @kne/npm-tools
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
 | `initDevDocumentMcp` | `[--target] [--sync-url] [--mcp-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
+| `generateOpenApiSignature` | `[--app-id] [--app-secret] [--expire-seconds]` | 生成 developer-document Open API 签名参数（输出 JSON） |
+
+#### generateOpenApiSignature
+
+生成 CI 调用 developer-document Open API 所需的签名与请求头（算法与 `@kne/fastify-signature/generateSignature` 一致）。
+
+| 选项 | 说明 |
+|------|------|
+| `--app-id` | Open API App ID；缺省读 `DEVELOPER_DOCUMENT_OPENAPI_APP_ID` / `OPENAPI_APP_ID` |
+| `--app-secret` | Open API App Secret；缺省读 `DEVELOPER_DOCUMENT_OPENAPI_APP_SECRET` / `OPENAPI_APP_SECRET` |
+| `--expire-seconds` | 签名有效期秒数，默认 `180` |
+
+```shell
+npx @kne/npm-tools generateOpenApiSignature \
+  --app-id "$OPENAPI_APP_ID" \
+  --app-secret "$OPENAPI_APP_SECRET"
+```
+
+输出 JSON 含 `appId`、`timestamp`、`expire`、`signature` 及可直接用于请求的 `headers`（`x-openapi-*`）。
 
 #### initDevDocumentMcp
 
@@ -225,6 +244,7 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
 | `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
 | `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt?, fetchImpl?, logger? }` | `Promise<object>` | 写入 kne_document 配置、安装 MCP，并同步待上传数据 |
+| `generateOpenApiSignature(options)` | `{ appId, appSecret, expireInSeconds?, now? }` | `{ appId, timestamp, expire, signature, headers }` | 生成 Open API 签名参数与 `x-openapi-*` 请求头 |
 | `kneDocumentSync.*` | 见 `lib/kneDocumentSync.js` | - | 本地 kne_document 与服务端同步 |
 
 #### initDevDocumentMcp

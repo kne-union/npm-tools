@@ -27,6 +27,7 @@ Commands:
   manifest                        生成 manifest
   init <project> [template]       使用模板初始化项目
   initDevDocumentMcp [options]    初始化 developer-document MCP 与 ~/.kne_document/config.json
+  generateOpenApiSignature [opts] 生成 developer-document Open API 签名参数（JSON）
 
 Options:
   -h, --help                      打印帮助说明
@@ -35,7 +36,8 @@ Options:
 
 const isLocaleToI18n = args[0] === 'localeToI18n' || args[0] === 'locale-to-i18n';
 const isInitDevDocumentMcp = args[0] === 'initDevDocumentMcp';
-if (!isLocaleToI18n && !isInitDevDocumentMcp && (args.includes('--help') || args.includes('-h'))) {
+const isGenerateOpenApiSignature = args[0] === 'generateOpenApiSignature';
+if (!isLocaleToI18n && !isInitDevDocumentMcp && !isGenerateOpenApiSignature && (args.includes('--help') || args.includes('-h'))) {
     printHelp();
     process.exit(0);
 }
@@ -131,6 +133,14 @@ switch (script) {
       console.error(err.message || err);
       process.exit(1);
     });
+    break;
+  case 'generateOpenApiSignature':
+    try {
+      npmTool.generateOpenApiSignature.runCli(args.slice(1));
+    } catch (err) {
+      console.error(err.message || err);
+      process.exit(1);
+    }
     break;
     case 'entryHtml':
         npmTool.generateEntryHtml().catch((err) => {
