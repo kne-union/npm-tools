@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const { execFileSync } = require('node:child_process');
+const path = require('node:path');
 const generateOpenApiSignature = require('../lib/generateOpenApiSignature');
 
 describe('generateOpenApiSignature', () => {
@@ -66,5 +68,18 @@ describe('generateOpenApiSignature', () => {
         process.env.OPENAPI_APP_SECRET = previousAppSecret;
       }
     }
+  });
+
+  it('CLI stdout 应仅为 JSON（供 CI HEADERS_JSON=$(npx ...) 解析）', () => {
+    const bin = path.join(__dirname, '../bin.js');
+    const stdout = execFileSync(
+      process.execPath,
+      [bin, 'generateOpenApiSignature', '--app-id', 'test-id', '--app-secret', 'test-secret'],
+      { encoding: 'utf8' }
+    );
+
+    assert.equal(stdout.trim().split('\n').length, 1);
+    const parsed = JSON.parse(stdout.trim());
+    assert.ok(parsed.headers['x-openapi-signature']);
   });
 });
