@@ -11,6 +11,7 @@ const getPackageInfo = require('./lib/getPackageInfo');
 const localeToI18n = require('./lib/localeToI18n');
 const getRemoteModuleDocument = require('./lib/getRemoteModuleDocument');
 const getNpmPackageDocument = require('./lib/getNpmPackageDocument');
+const getRemoteComponentReadmeFromTarball = require('./lib/getRemoteComponentReadmeFromTarball');
 const buildDocumentIndex = require('./lib/buildDocumentIndex');
 const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
 const initDevDocumentMcp = require('./lib/initDevDocumentMcp');
@@ -33,6 +34,7 @@ module.exports = {
   localeToI18n,
   getRemoteModuleDocument,
   getNpmPackageDocument,
+  getRemoteComponentReadmeFromTarball,
   buildDocumentIndex,
   getDocumentIndexDir,
   initDevDocumentMcp,
