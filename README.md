@@ -250,8 +250,35 @@ npx @kne/npm-tools localeToI18n --dry-run
 
 | 命令 | 参数 | 说明 |
 |------|------|------|
-| `entryHtml` | - | 生成入口 HTML 文件 |
+| `entryHtml` | - | 生成入口 HTML 文件；远程组件项目同时生成 `remote-module-config*.json` |
 | `manifest` | - | 生成 manifest 清单文件 |
+
+#### entryHtml 与 remote-module-config
+
+`entryHtml` 读取 `INDEX_HTML_PATH`（默认 `build/index.html`），按 `DEPLOY_URL`（支持 `{{APP_NAME}}`、`{{VERSION}}`）改写资源地址并注入 `window.runtimePublicUrl` / `window.runtimeApiUrl` / `window.runtimeEnv`，写入 `OUTPUT_HTML_PATH`（默认 `build/index.html`）。
+
+若同目录 `asset-manifest.json` 中存在 `remoteEntry.js`（即远程组件项目），会在 `OUTPUT_HTML_PATH` 同目录额外生成远程组件调用配置，供宿主项目运行时 `preset({ remotes })` 使用：
+
+| OUTPUT_HTML_PATH | 配置文件 |
+|------|------|
+| `build/entry-cn-prod.html` | `build/remote-module-config-cn-prod.json` |
+| `build/entry.html` / `build/index.html` | `build/remote-module-config.json` |
+| 其它（如 `build/main.html`） | `build/remote-module-config-main.json` |
+
+可用 `REMOTE_MODULE_CONFIG_PATH` 指定输出路径。文件内容：
+
+```json
+{
+  "name": "ai-interview-flowup",
+  "url": "https://cdn.leapin-ai.com/leapin-ai-interview-flowup/cn-prod/df09fca",
+  "tpl": "{{url}}",
+  "version": "0_1_181"
+}
+```
+
+- `name`：`COMPONENTS_NAME`，缺省取 `package.json` 的 `name`
+- `url`：`DEPLOY_URL` 渲染结果（与 `window.runtimePublicUrl` 一致）；`DEPLOY_URL=/` 时为空串，表示与入口站点同源
+- `version`：从 `asset-manifest.json` 中 remoteEntry 的容器名（如 `ai_interview_flowup_0_1_181.js`）解析。remote-loader 以 `remote_version`（`-./@` 转 `_`）作为容器全局变量名，因此该值可直接作为 `defaultVersion`；容器名与 `name` 不匹配时回退 `CURRENT_VERSION` / `package.json` 的 `version`
 
 本地单元测试：`npm test`（mocha，匹配 `test/**/*.test.js`）。PR 与发布流水线会执行该命令。
 
