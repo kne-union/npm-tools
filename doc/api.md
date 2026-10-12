@@ -35,6 +35,41 @@
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
 | `initDevDocumentMcp` | `[--target] [--sync-url] [--mcp-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
 | `generateOpenApiSignature` | `[--app-id] [--app-secret] [--expire-seconds]` | 生成 developer-document Open API 签名参数（输出 JSON） |
+| `packApp` | `[--dir] [--out] [--name] [--version] [--upload] [--api-url] [--token]` | 检查并打包应用中心部署包（zip），可上传到 developer-document 并输出 `fileId` |
+
+#### packApp
+
+在全栈 / 后端业务应用根目录执行：先检查包结构，**全部通过才打包**；检查失败时一次列出所有问题并以非 0 退出。
+
+| 检查项 | 要求 |
+|------|------|
+| 根目录 | `package.json` 存在且为合法 JSON |
+| 前端产物 | `build/` 含 `index.html`、`entry.html`、`entry-prod.html` 之一（先执行前端构建） |
+| 服务端 | `server/package.json`、`server/index.js` 存在；`server/package.json` 不含 `file:` / `link:` 本地依赖 |
+| 环境变量声明 | `server/env.schema.json` 存在、为合法 JSON：`type` 为 `object`、`properties` 为对象且每项为对象、`type` 为合法 JSON 类型、`required` 只能引用已声明的键 |
+| SQL 迁移 | `server/sql/*.sql` 文件名只含 `[A-Za-z0-9_-.]` |
+
+zip 根目录直接包含 `package.json`、`build/`、`server/`；排除 `node_modules`、`.git`、`.DS_Store`、`.env*`、`server/build`、`*.log`、本地 sqlite 库（`*.db` / `*.sqlite`）。
+
+| 选项 | 说明 |
+|------|------|
+| `--dir` | 项目根目录，默认当前目录 |
+| `--out` | 输出 zip 路径，默认 `<系统临时目录>/kne-app-package/<name>-<version>.zip` |
+| `--name` | 应用中心中的应用 name，默认取根 `package.json` 的 `name`（去掉 scope、转小写） |
+| `--version` | 版本号，默认取根 `package.json` 的 `version` |
+| `--upload` | 打包后以长期令牌 `POST <apiUrl>/app-package/upload`（multipart：`name`、`version`、`file`），输出 `fileId` |
+| `--api-url` | 覆盖 `~/.kne_document/config.json` 的 `remote.apiUrl` / `remote.syncUrl` |
+| `--token` | 覆盖 `~/.kne_document/config.json` 的 `remote.token` |
+
+上传需应用已在应用中心创建，且令牌所属用户为管理员。拿到 `fileId` 后，用 developer-document MCP `upload_app_version`（`name`、`version`、`fileId`）登记版本，再 `deploy_app` 部署。
+
+```bash
+# 只检查并打包
+npx @kne/npm-tools packApp
+
+# 打包并上传（先执行过 initDevDocumentMcp）
+npx @kne/npm-tools packApp --upload --name my-app
+```
 
 #### generateOpenApiSignature
 
@@ -46,20 +81,38 @@
 | `--app-secret` | Open API App Secret；缺省读 `DEVELOPER_DOCUMENT_OPENAPI_APP_SECRET` / `OPENAPI_APP_SECRET` |
 | `--expire-seconds` | 签名有效期秒数，默认 `180` |
 
+```shell
+npx @kne/npm-tools generateOpenApiSignature \
+  --app-id "$OPENAPI_APP_ID" \
+  --app-secret "$OPENAPI_APP_SECRET"
+```
+
+输出 JSON 含 `appId`、`timestamp`、`expire`、`signature` 及可直接用于请求的 `headers`（`x-openapi-*`）。
+
 #### initDevDocumentMcp
+
+写入本地 kne_document 连接配置，并按目标客户端合并 MCP 服务（`developer-document`）。
 
 | 选项 | 说明 |
 |------|------|
-| `--target` | MCP 安装目标，目前支持 `cursor`；省略时交互选择 |
-| `--sync-url` | worklog / experience 同步 API 根地址 |
+| `--target` | MCP 安装目标，目前支持 `cursor`（合并到 `~/.cursor/mcp.json`）；省略时交互选择 |
+| `--sync-url` | worklog / experience 同步 API 根地址（REST 上传） |
 | `--mcp-url` | HTTP MCP 端点完整地址；省略时为 `<sync-url>/mcp` |
-| `--token` | 登录 token |
-| `--skip-sync` | 跳过初始化后的本地数据同步 |
-| `--dry-run` | 仅预览待同步文件 |
+| `--token` | 登录 token（`x-user-token`） |
+| `--skip-sync` | 跳过初始化后的本地 worklog / experience 同步 |
+| `--dry-run` | 仅预览待同步文件，不实际上传 |
 
 `--api-url` 仍可作为 `--sync-url` 的兼容别名。
 
-初始化完成后会检查 `~/.kne_document/worklog` / `experience` 下 JSON，按 `sync-registry.json` 上传尚未同步的条目。
+```shell
+npx @kne/npm-tools initDevDocumentMcp \
+  --target cursor \
+  --sync-url <developer-document-api-v1-base> \
+  --mcp-url <developer-document-mcp-endpoint> \
+  --token "<登录 token>"
+```
+
+初始化完成后会自动检查 `~/.kne_document/worklog` 与 `experience` 下是否有待同步 JSON；若有则按 `sync-registry.json` 规则上传。
 
 #### localeToI18n
 
@@ -187,8 +240,18 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
 | `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
 | `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
-| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt? }` | `Promise<object>` | 写入 kne_document 配置并安装 MCP |
+| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt?, fetchImpl?, logger? }` | `Promise<object>` | 写入 kne_document 配置、安装 MCP，并同步待上传数据 |
 | `generateOpenApiSignature(options)` | `{ appId, appSecret, expireInSeconds?, now? }` | `{ appId, timestamp, expire, signature, headers }` | 生成 Open API 签名参数与 `x-openapi-*` 请求头 |
+| `packApp(argv, options?)` | `argv: string[]`, `options?: { cwd?, homedir?, fetchImpl?, logger? }` | `Promise<{ name, version, out, size, fileCount, fileId }>` | 检查并打包应用中心部署包，`--upload` 时上传并返回 `fileId` |
+| `packApp.checkAppPackage(rootDir)` | `rootDir: string` | `Promise<{ ok, errors, warnings, rootPkg, envSchema, sqlFiles }>` | 只做包结构检查，不打包 |
+| `kneDocumentSync.*` | 见 `lib/kneDocumentSync.js` | - | 本地 kne_document 与服务端同步 |
+
+#### initDevDocumentMcp
+
+- 写入 `~/.kne_document/config.json`：`remote.syncUrl`、`remote.mcpUrl`、`token`
+- `--target cursor`：合并 `developer-document` 到 `~/.cursor/mcp.json` 的 `mcpServers`
+- 初始化后自动检查本地 worklog / experience 待同步项并上传（可用 `--skip-sync` 跳过）
+- 已有配置会保留并合并，不会覆盖其它 MCP 服务
 
 #### 文档索引目录
 
