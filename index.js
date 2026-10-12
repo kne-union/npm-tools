@@ -17,6 +17,7 @@ const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
 const initDevDocumentMcp = require('./lib/initDevDocumentMcp');
 const kneDocumentSync = require('./lib/kneDocumentSync');
 const generateOpenApiSignature = require('./lib/generateOpenApiSignature');
+const packApp = require('./lib/packApp');
 
 module.exports = {
   generateEntryHtml,
@@ -40,5 +41,6 @@ module.exports = {
   initDevDocumentMcp,
   kneDocumentSync,
   generateOpenApiSignature,
+  packApp,
   buildCatalogFromReadme: buildDocumentIndex.buildCatalogFromReadme
 };

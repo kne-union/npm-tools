@@ -28,6 +28,7 @@ Commands:
   init <project> [template]       使用模板初始化项目
   initDevDocumentMcp [options]    初始化 developer-document MCP 与 ~/.kne_document/config.json
   generateOpenApiSignature [opts] 生成 Open API 签名并写入环境变量
+  packApp [options]               检查并打包应用中心部署包，可 --upload 上传（详见该命令 -h）
 
 Options:
   -h, --help                      打印帮助说明
@@ -37,7 +38,8 @@ Options:
 const isLocaleToI18n = args[0] === 'localeToI18n' || args[0] === 'locale-to-i18n';
 const isInitDevDocumentMcp = args[0] === 'initDevDocumentMcp';
 const isGenerateOpenApiSignature = args[0] === 'generateOpenApiSignature';
-if (!isLocaleToI18n && !isInitDevDocumentMcp && !isGenerateOpenApiSignature && (args.includes('--help') || args.includes('-h'))) {
+const isPackApp = args[0] === 'packApp';
+if (!isLocaleToI18n && !isInitDevDocumentMcp && !isGenerateOpenApiSignature && !isPackApp && (args.includes('--help') || args.includes('-h'))) {
     printHelp();
     process.exit(0);
 }
@@ -133,6 +135,12 @@ switch (script) {
     (async () => {
       await npmTool.initDevDocumentMcp(args.slice(1), { prompt: select });
     })().catch(err => {
+      console.error(err.message || err);
+      process.exit(1);
+    });
+    break;
+  case 'packApp':
+    npmTool.packApp(args.slice(1)).catch(err => {
       console.error(err.message || err);
       process.exit(1);
     });
