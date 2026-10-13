@@ -232,13 +232,13 @@ npx @kne/npm-tools localeToI18n --dry-run
   "name": "ai-interview-flowup",
   "url": "https://cdn.leapin-ai.com/leapin-ai-interview-flowup/cn-prod/df09fca",
   "tpl": "{{url}}",
-  "version": "0_1_181"
+  "version": "0.1.181"
 }
 ```
 
 - `name`：`COMPONENTS_NAME`，缺省取 `package.json` 的 `name`
 - `url`：`DEPLOY_URL` 渲染结果（与 `window.runtimePublicUrl` 一致）；`DEPLOY_URL=/` 时为空串，表示与入口站点同源
-- `version`：从 `asset-manifest.json` 中 remoteEntry 的容器名（如 `ai_interview_flowup_0_1_181.js`）解析。remote-loader 以 `remote_version`（`-./@` 转 `_`）作为容器全局变量名，因此该值可直接作为 `defaultVersion`；容器名与 `name` 不匹配时回退 `CURRENT_VERSION` / `package.json` 的 `version`
+- `version`：合法的 semver，可直接作为 `defaultVersion`。remote-loader 以 `remote_version`（`-./@` 转 `_`）作为容器全局变量名，因此按 asset-manifest.json 中 remoteEntry 的容器名（如 `ai_interview_flowup_0_1_181.js`）校验：`CURRENT_VERSION` / `package.json` 的 `version` 转换后与容器名一致则直接使用；否则容器名中的 `0_1_181` 还原为 `0.1.181`；容器名与 `name` 不匹配时回退 `CURRENT_VERSION` / `package.json` 的 `version`
 
 本地单元测试：`npm test`（mocha，匹配 `test/**/*.test.js`）。PR 与发布流水线会执行该命令。
 
