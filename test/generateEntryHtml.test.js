@@ -61,10 +61,23 @@ describe('generateEntryHtml remote-module-config', () => {
       name: 'ai-interview-flowup',
       url: 'https://cdn.leapin-ai.com/leapin-ai-interview-flowup/cn-prod/df09fca',
       tpl: '{{url}}',
-      version: '0_1_181'
+      version: '0.1.181'
     });
     const html = await fs.readFile(path.join(tempDir, 'build/entry-cn-prod.html'), 'utf8');
     assert.match(html, /window\.runtimePublicUrl='https:\/\/cdn\.leapin-ai\.com\/leapin-ai-interview-flowup\/cn-prod\/df09fca'/);
+  });
+
+  it('容器名版本与 package.json version 一致时输出原始 semver（含预发布号）', async () => {
+    await fs.writeJson(path.join(tempDir, 'package.json'), { name: 'ai-interview-flowup', version: '1.0.0-beta.1' });
+    await writeManifest({ 'ai_interview_flowup_1_0_0_beta_1.js': '/remoteEntry.js' });
+    process.env.DEPLOY_URL = '/';
+    process.env.OUTPUT_HTML_PATH = 'build/entry.html';
+    process.env.COMPONENTS_NAME = 'ai-interview-flowup';
+
+    await generateEntryHtml();
+
+    const config = await fs.readJson(path.join(tempDir, 'build/remote-module-config.json'));
+    assert.equal(config.version, '1.0.0-beta.1');
   });
 
   it('容器名与组件名不匹配时回退 package.json version', async () => {
