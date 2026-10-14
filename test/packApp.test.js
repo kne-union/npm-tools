@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs-extra');
 const JSZip = require('jszip');
+const { execFileSync } = require('node:child_process');
 const packApp = require('../lib/packApp');
 
 const { parseArgs, checkEnvSchema, checkAppPackage, toAppName } = packApp;
@@ -116,6 +117,49 @@ describe('packApp', () => {
       .filter(name => !zip.files[name].dir)
       .sort();
     assert.deepEqual(files, ['build/index.html', 'build/static/main.js', 'package.json', 'server/env.schema.json', 'server/index.js', 'server/package.json', 'server/sql/001_init.sql']);
+  });
+
+  it('excludes git-ignored server files but keeps build and tracked files', async () => {
+    await createProject(root);
+    await fs.outputFile(path.join(root, 'server/static/upload.png'), 'png');
+    await fs.outputFile(path.join(root, 'server/package-lock.json'), '{}');
+    await fs.outputFile(path.join(root, 'server/libs/keep.js'), 'module.exports = 1;');
+    await fs.outputFile(path.join(root, 'server/libs/tracked.lock'), 'tracked');
+    await fs.outputFile(path.join(root, 'server/libs/.gitignore'), 'generated.js\n');
+    await fs.outputFile(path.join(root, 'server/libs/generated.js'), 'generated');
+    await fs.outputFile(path.join(root, '.gitignore'), 'build\nserver/static\npackage-lock.json\n*.lock\nserver/env.schema.json\n');
+    const git = (...args) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd: root, stdio: 'ignore' });
+    git('init', '-q');
+    git('add', '-f', 'server/libs/tracked.lock');
+    git('commit', '-q', '-m', 'init');
+
+    const out = path.join(root, 'out.zip');
+    const logs = [];
+    await packApp(['--out', out], { cwd: root, logger: { log: msg => logs.push(msg), warn: msg => logs.push(msg) } });
+    const zip = await JSZip.loadAsync(await fs.readFile(out));
+    const files = Object.keys(zip.files)
+      .filter(name => !zip.files[name].dir)
+      .sort();
+    assert.deepEqual(files, [
+      'build/index.html',
+      'build/static/main.js',
+      'package.json',
+      'server/env.schema.json',
+      'server/index.js',
+      'server/libs/.gitignore',
+      'server/libs/keep.js',
+      'server/libs/tracked.lock',
+      'server/package.json',
+      'server/sql/001_init.sql'
+    ]);
+    assert.ok(logs.some(msg => /按 \.gitignore 排除 server\/ 下 3 个文件/.test(msg)));
+  });
+
+  it('warns and skips gitignore filtering outside a git repo', async () => {
+    await createProject(root);
+    const logs = [];
+    await packApp(['--out', path.join(root, 'out.zip')], { cwd: root, logger: { log: () => {}, warn: msg => logs.push(msg) } });
+    assert.ok(logs.some(msg => /未按 \.gitignore 过滤/.test(msg)));
   });
 
   it('uploads with the kne_document token and returns fileId', async () => {
