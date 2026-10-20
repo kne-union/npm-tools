@@ -95,7 +95,7 @@ npx @kne/npm-tools generateOpenApiSignature \
 
 | 选项 | 说明 |
 |------|------|
-| `--target` | MCP 安装目标，目前支持 `cursor`（合并到 `~/.cursor/mcp.json`）；省略时交互选择 |
+| `--target` | MCP 安装目标：`cursor`（合并到 `~/.cursor/mcp.json`）、`workbuddy`（合并到 `~/.workbuddy/mcp.json`，`type: "http"`）；省略时交互选择 |
 | `--sync-url` | worklog / experience 同步 API 根地址（REST 上传） |
 | `--mcp-url` | HTTP MCP 端点完整地址；省略时为 `<sync-url>/mcp` |
 | `--token` | 登录 token（`x-user-token`） |
@@ -277,6 +277,7 @@ npx @kne/npm-tools localeToI18n --dry-run
 
 - 写入 `~/.kne_document/config.json`：`remote.syncUrl`、`remote.mcpUrl`、`token`
 - `--target cursor`：合并 `developer-document` 到 `~/.cursor/mcp.json` 的 `mcpServers`
+- `--target workbuddy`：合并到 `~/.workbuddy/mcp.json`（条目带 `type: "http"`），之后需在 WorkBuddy「连接器 → 自定义连接器」中信任并启用
 - 初始化后自动检查本地 worklog / experience 待同步项并上传（可用 `--skip-sync` 跳过）
 - 已有配置会保留并合并，不会覆盖其它 MCP 服务
 

@@ -158,6 +158,22 @@ describe('initDevDocumentMcp', () => {
     assert.equal(kneConfig.remote.mcpUrl, MCP_URL);
     assert.equal(kneConfig.remote.token, 'token-value');
     assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].url, MCP_URL);
+    assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].type, undefined);
+  });
+
+  it('initDevDocumentMcp --target workbuddy 应写入 ~/.workbuddy/mcp.json 且 type 为 http', async () => {
+    const result = await initDevDocumentMcp(
+      ['--target', 'workbuddy', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync'],
+      { homedir: tempHome }
+    );
+
+    assert.equal(result.mcpConfigPath, path.join(tempHome, '.workbuddy', 'mcp.json'));
+    const mcpConfig = await fs.readJson(result.mcpConfigPath);
+    assert.deepEqual(mcpConfig.mcpServers[MCP_SERVER_ID], {
+      type: 'http',
+      url: MCP_URL,
+      headers: { 'x-user-token': 'token-value' }
+    });
   });
 
   it('initDevDocumentMcp 有待同步文件时应触发 syncAll', async () => {
