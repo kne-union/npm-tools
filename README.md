@@ -135,7 +135,7 @@ npx @kne/npm-tools generateOpenApiSignature \
 
 | 选项 | 说明 |
 |------|------|
-| `--target` | MCP 安装目标，目前支持 `cursor`（合并到 `~/.cursor/mcp.json`）；省略时交互选择 |
+| `--target` | MCP 安装目标：`cursor`（合并到 `~/.cursor/mcp.json`）、`workbuddy`（合并到 `~/.workbuddy/mcp.json`，`type: "http"`）；省略时交互选择 |
 | `--sync-url` | worklog / experience 同步 API 根地址（REST 上传） |
 | `--mcp-url` | HTTP MCP 端点完整地址；省略时为 `<sync-url>/mcp` |
 | `--token` | 登录 token（`x-user-token`） |
@@ -272,13 +272,13 @@ npx @kne/npm-tools localeToI18n --dry-run
   "name": "ai-interview-flowup",
   "url": "https://cdn.leapin-ai.com/leapin-ai-interview-flowup/cn-prod/df09fca",
   "tpl": "{{url}}",
-  "version": "0_1_181"
+  "version": "0.1.181"
 }
 ```
 
 - `name`：`COMPONENTS_NAME`，缺省取 `package.json` 的 `name`
 - `url`：`DEPLOY_URL` 渲染结果（与 `window.runtimePublicUrl` 一致）；`DEPLOY_URL=/` 时为空串，表示与入口站点同源
-- `version`：从 `asset-manifest.json` 中 remoteEntry 的容器名（如 `ai_interview_flowup_0_1_181.js`）解析。remote-loader 以 `remote_version`（`-./@` 转 `_`）作为容器全局变量名，因此该值可直接作为 `defaultVersion`；容器名与 `name` 不匹配时回退 `CURRENT_VERSION` / `package.json` 的 `version`
+- `version`：合法的 semver，可直接作为 `defaultVersion`。remote-loader 以 `remote_version`（`-./@` 转 `_`）作为容器全局变量名，因此按 asset-manifest.json 中 remoteEntry 的容器名（如 `ai_interview_flowup_0_1_181.js`）校验：`CURRENT_VERSION` / `package.json` 的 `version` 转换后与容器名一致则直接使用；否则容器名中的 `0_1_181` 还原为 `0.1.181`；容器名与 `name` 不匹配时回退 `CURRENT_VERSION` / `package.json` 的 `version`
 
 本地单元测试：`npm test`（mocha，匹配 `test/**/*.test.js`）。PR 与发布流水线会执行该命令。
 
@@ -317,6 +317,7 @@ npx @kne/npm-tools localeToI18n --dry-run
 
 - 写入 `~/.kne_document/config.json`：`remote.syncUrl`、`remote.mcpUrl`、`token`
 - `--target cursor`：合并 `developer-document` 到 `~/.cursor/mcp.json` 的 `mcpServers`
+- `--target workbuddy`：合并到 `~/.workbuddy/mcp.json`（条目带 `type: "http"`），之后需在 WorkBuddy「连接器 → 自定义连接器」中信任并启用
 - 初始化后自动检查本地 worklog / experience 待同步项并上传（可用 `--skip-sync` 跳过）
 - 已有配置会保留并合并，不会覆盖其它 MCP 服务
 
