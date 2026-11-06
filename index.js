@@ -15,6 +15,7 @@ const getRemoteComponentReadmeFromTarball = require('./lib/getRemoteComponentRea
 const buildDocumentIndex = require('./lib/buildDocumentIndex');
 const getDocumentIndexDir = require('./lib/getDocumentIndexDir');
 const initDevDocumentMcp = require('./lib/initDevDocumentMcp');
+const installSkills = require('./lib/installSkills');
 const kneDocumentSync = require('./lib/kneDocumentSync');
 const generateOpenApiSignature = require('./lib/generateOpenApiSignature');
 const packApp = require('./lib/packApp');
@@ -39,6 +40,7 @@ module.exports = {
   buildDocumentIndex,
   getDocumentIndexDir,
   initDevDocumentMcp,
+  installSkills,
   kneDocumentSync,
   generateOpenApiSignature,
   packApp,
