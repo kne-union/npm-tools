@@ -62,7 +62,7 @@ describe('initDevDocumentMcp', () => {
     });
   });
 
-  it('buildMcpServerEntry 应使用完整 mcp-url', () => {
+  it('buildMcpServerEntry 应使用完整 mcp-url 与 Bearer 令牌', () => {
     assert.deepEqual(
       buildMcpServerEntry({
         mcpUrl: MCP_URL,
@@ -71,8 +71,19 @@ describe('initDevDocumentMcp', () => {
       {
         url: MCP_URL,
         headers: {
-          'x-user-token': 'token-value'
+          Authorization: 'Bearer token-value'
         }
+      }
+    );
+  });
+
+  it('buildMcpServerEntry 对 workbuddy 应带 type: http', () => {
+    assert.deepEqual(
+      buildMcpServerEntry({ mcpUrl: MCP_URL, token: 'token-value', type: 'http' }),
+      {
+        type: 'http',
+        url: MCP_URL,
+        headers: { Authorization: 'Bearer token-value' }
       }
     );
   });
@@ -136,13 +147,13 @@ describe('initDevDocumentMcp', () => {
     assert.deepEqual(config.mcpServers.figma, { url: 'https://mcp.figma.com/mcp' });
     assert.deepEqual(config.mcpServers[MCP_SERVER_ID], {
       url: MCP_URL,
-      headers: { 'x-user-token': 'token-value' }
+      headers: { Authorization: 'Bearer token-value' }
     });
   });
 
   it('initDevDocumentMcp 应同时写入 kne_document 与 cursor MCP 配置', async () => {
     const result = await initDevDocumentMcp(
-      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync'],
+      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync', '--skip-skills'],
       { homedir: tempHome }
     );
 
@@ -172,7 +183,7 @@ describe('initDevDocumentMcp', () => {
     assert.deepEqual(mcpConfig.mcpServers[MCP_SERVER_ID], {
       type: 'http',
       url: MCP_URL,
-      headers: { 'x-user-token': 'token-value' }
+      headers: { Authorization: 'Bearer token-value' }
     });
   });
 
@@ -189,7 +200,7 @@ describe('initDevDocumentMcp', () => {
     });
 
     const result = await initDevDocumentMcp(
-      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value'],
+      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-skills'],
       {
         homedir: tempHome,
         fetchImpl: async (...args) => {
@@ -202,6 +213,75 @@ describe('initDevDocumentMcp', () => {
 
     assert.equal(result.syncSummary.synced, 1);
     assert.ok(uploadCount >= 1);
+  });
+
+  it('parseArgs 应解析技能安装相关开关', () => {
+    const args = parseArgs(['--skip-skills', '--skills-only', '--skills-dir', '/tmp/skills', '--dry-run']);
+    assert.equal(args.skipSkills, true);
+    assert.equal(args.skillsOnly, true);
+    assert.equal(args.skillsDir, '/tmp/skills');
+    assert.equal(args.dryRun, true);
+  });
+
+  it('initDevDocumentMcp 应支持 workbuddy 目标并写入 type: http', async () => {
+    const result = await initDevDocumentMcp(
+      ['--target', 'workbuddy', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync', '--skip-skills'],
+      { homedir: tempHome }
+    );
+
+    assert.equal(result.target, 'workbuddy');
+    assert.equal(result.mcpConfigPath, path.join(tempHome, '.workbuddy', 'mcp.json'));
+    const mcpConfig = await fs.readJson(result.mcpConfigPath);
+    assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].type, 'http');
+    assert.equal(mcpConfig.mcpServers[MCP_SERVER_ID].headers.Authorization, 'Bearer token-value');
+  });
+
+  it('initDevDocumentMcp 应在 Phase 2 安装技能并写入 manifest', async () => {
+    const manifest = {
+      schemaVersion: 1,
+      target: 'workbuddy',
+      generatedAt: '2026-11-06T22:00:00.000Z',
+      total: 1,
+      files: [
+        {
+          id: '1',
+          kind: 'skill',
+          name: 'demo',
+          path: '~/.workbuddy/skills/demo/SKILL.md',
+          content: '---\nname: demo\n---\n\n# demo\n',
+          contentHash: ''
+        }
+      ],
+      memoryBlocks: []
+    };
+    const { sha256 } = require('../lib/installSkills');
+    manifest.files[0].contentHash = sha256(manifest.files[0].content);
+
+    const result = await initDevDocumentMcp(
+      ['--target', 'workbuddy', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync'],
+      {
+        homedir: tempHome,
+        logger: () => {},
+        fetchImpl: async () => ({
+          ok: true,
+          status: 200,
+          json: async () => ({ code: 0, data: manifest })
+        })
+      }
+    );
+
+    assert.equal(result.skillSummary.summary.installed, 1);
+    const installed = await fs.readFile(path.join(tempHome, '.workbuddy', 'skills', 'demo', 'SKILL.md'), 'utf8');
+    assert.equal(installed, manifest.files[0].content);
+    assert.ok(await fs.pathExists(path.join(tempHome, '.kne_document', 'skill-install-manifest.json')));
+  });
+
+  it('--skip-skills 应跳过 Phase 2', async () => {
+    const result = await initDevDocumentMcp(
+      ['--target', 'cursor', '--sync-url', SYNC_URL, '--mcp-url', MCP_URL, '--token', 'token-value', '--skip-sync', '--skip-skills'],
+      { homedir: tempHome }
+    );
+    assert.equal(result.skillSummary, null);
   });
 
   it('installMcpTarget 对未知 target 应抛错', async () => {

@@ -33,7 +33,8 @@
 | `deployProject` | - | 执行 project 部署 |
 | `deployPrompts` | `[type]` | 部署 prompts 文档 |
 | `localeToI18n` / `locale-to-i18n` | `[--root] [--out] [--include-server] [--dry-run]` | 将项目及依赖包（含 `@kne/react-intl` 且有 `dist/locale`）的语言包导出为 IntlAdmin `.i18n` |
-| `initDevDocumentMcp` | `[--target] [--sync-url] [--mcp-url] [--token] [--skip-sync] [--dry-run]` | 初始化 developer-document MCP，写入 config，并自动同步待上传数据 |
+| `initDevDocumentMcp` | `[--target] [--sync-url] [--mcp-url] [--token] [--skip-sync] [--skip-skills] [--skills-only] [--skills-dir] [--dry-run]` | 初始化 developer-document MCP，按目标安装技能 / 规则，并自动同步待上传数据 |
+| `installSkills` | `[--target] [--sync-url] [--token] [--type] [--name] [--category] [--dry-run]` | 单独重装技能 / 规则（不写 MCP 配置） |
 | `generateOpenApiSignature` | `[--app-id] [--app-secret] [--expire-seconds]` | 生成 developer-document Open API 签名参数（输出 JSON） |
 | `packApp` | `[--dir] [--out] [--name] [--version] [--upload] [--api-url] [--token]` | 检查并打包应用中心部署包（zip），可上传到 developer-document 并输出 `fileId` |
 
@@ -96,11 +97,14 @@ npx @kne/npm-tools generateOpenApiSignature \
 | 选项 | 说明 |
 |------|------|
 | `--target` | MCP 安装目标：`cursor`（合并到 `~/.cursor/mcp.json`）、`workbuddy`（合并到 `~/.workbuddy/mcp.json`，`type: "http"`）；省略时交互选择 |
-| `--sync-url` | worklog / experience 同步 API 根地址（REST 上传） |
+| `--sync-url` | worklog / experience 同步 API 根地址（REST 上传），也是技能清单的取数地址 |
 | `--mcp-url` | HTTP MCP 端点完整地址；省略时为 `<sync-url>/mcp` |
-| `--token` | 登录 token（`x-user-token`） |
+| `--token` | 登录 token（MCP 配置写 `Authorization: Bearer`；REST 同步用 `x-user-token`） |
 | `--skip-sync` | 跳过初始化后的本地 worklog / experience 同步 |
-| `--dry-run` | 仅预览待同步文件，不实际上传 |
+| `--skip-skills` | 跳过技能 / 规则安装 |
+| `--skills-only` | 只重装技能 / 规则，不写 config 与 MCP 配置 |
+| `--skills-dir` | 覆盖默认的技能落盘目录 |
+| `--dry-run` | 仅预览待同步文件与技能落盘，不实际写入 |
 
 `--api-url` 仍可作为 `--sync-url` 的兼容别名。
 
@@ -113,6 +117,16 @@ npx @kne/npm-tools initDevDocumentMcp \
 ```
 
 初始化完成后会自动检查 `~/.kne_document/worklog` 与 `experience` 下是否有待同步 JSON；若有则按 `sync-registry.json` 规则上传。
+
+初始化还会调用 `GET <sync-url>/skill/export?target=<target>` 取安装清单并落盘：
+
+- `cursor`：规则 → `~/.cursor/rules/<name>.mdc`，技能 → `~/.cursor/skills/<name>/SKILL.md`
+- `workbuddy`：全部 → `~/.workbuddy/skills/<name>/SKILL.md`；`alwaysApply=true` 的规则额外把「摘要 + 全文路径」写进用户级 `MEMORY.md` 的托管区块（`<!-- BEGIN managed:developer-document:skills -->`），保证每会话必加载
+- 路径白名单校验、写前 `.bak.<时间戳>` 备份、`contentHash` 幂等；`MEMORY.md` 区块外内容逐字节不变，标记重复或路径越界会拒绝写入
+- `MEMORY.md` 由 CLI 自动定位：唯一 `~/.workbuddy/user-*-personal/` 账号目录时直接使用，**文件不存在则新建**（内容仅托管区块）；多账号目录时只认已存在且唯一命中的文件；账号目录缺失或多账号歧义才告警跳过，技能文件照常安装
+- 结果记录在 `~/.kne_document/skill-install-manifest.json`；技能安装失败只告警，不回滚 MCP 配置
+
+规则写入 `MEMORY.md` 后需**新建会话**才会生效。单独重装可用 `npx @kne/npm-tools installSkills --target workbuddy --sync-url <api-v1-base> --token "<token>"`。
 
 #### localeToI18n
 
@@ -267,7 +281,9 @@ npx @kne/npm-tools localeToI18n --dry-run
 | `buildDocumentIndex(options)` | `{ id, version?, readme, packageName?, source?, readmeUrl?, outputDir? }` | `Promise<object>` | 切分 README 并写入文档索引目录 |
 | `getDocumentIndexDir(override?)` | `override?: string` | `Promise<string>` | 索引根目录（见下） |
 | `buildCatalogFromReadme(readme, id)` | - | `{ index, components }` | 仅切分解析，不写盘 |
-| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt?, fetchImpl?, logger? }` | `Promise<object>` | 写入 kne_document 配置、安装 MCP，并同步待上传数据 |
+| `initDevDocumentMcp(argv, options?)` | `argv: string[]`, `options?: { homedir?, prompt?, fetchImpl?, logger? }` | `Promise<object>` | 写入 kne_document 配置、安装 MCP 与技能，并同步待上传数据 |
+| `installSkills(options)` | `{ manifest, target, homedir?, dryRun?, skillsDir?, logger? }` | `Promise<object>` | 把安装清单落盘（含 MEMORY.md 托管区块）并返回汇总 |
+| `installSkills.runCli(argv, options?)` | `argv: string[]` | `Promise<object>` | 独立命令入口：拉清单 + 落盘 |
 | `generateOpenApiSignature(options)` | `{ appId, appSecret, expireInSeconds?, now? }` | `{ appId, timestamp, expire, signature, headers }` | 生成 Open API 签名参数与 `x-openapi-*` 请求头 |
 | `packApp(argv, options?)` | `argv: string[]`, `options?: { cwd?, homedir?, fetchImpl?, logger? }` | `Promise<{ name, version, out, size, fileCount, fileId }>` | 检查并打包应用中心部署包，`--upload` 时上传并返回 `fileId` |
 | `packApp.checkAppPackage(rootDir)` | `rootDir: string` | `Promise<{ ok, errors, warnings, rootPkg, envSchema, sqlFiles }>` | 只做包结构检查，不打包 |
@@ -278,6 +294,7 @@ npx @kne/npm-tools localeToI18n --dry-run
 - 写入 `~/.kne_document/config.json`：`remote.syncUrl`、`remote.mcpUrl`、`token`
 - `--target cursor`：合并 `developer-document` 到 `~/.cursor/mcp.json` 的 `mcpServers`
 - `--target workbuddy`：合并到 `~/.workbuddy/mcp.json`（条目带 `type: "http"`），之后需在 WorkBuddy「连接器 → 自定义连接器」中信任并启用
+- Phase 2 按目标安装技能 / 规则（见上文「初始化」），失败只告警不回滚 Phase 1
 - 初始化后自动检查本地 worklog / experience 待同步项并上传（可用 `--skip-sync` 跳过）
 - 已有配置会保留并合并，不会覆盖其它 MCP 服务
 
