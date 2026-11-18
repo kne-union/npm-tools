@@ -49,6 +49,7 @@
 | 服务端 | `server/package.json`、`server/index.js` 存在；`server/package.json` 不含 `file:` / `link:` 本地依赖 |
 | 环境变量声明 | `server/env.schema.json` 存在、为合法 JSON：`type` 为 `object`、`properties` 为对象且每项为对象、`type` 为合法 JSON 类型、`required` 只能引用已声明的键 |
 | SQL 迁移 | `server/sql/*.sql` 文件名只含 `[A-Za-z0-9_-.]` |
+| 菜单声明（可选） | 存在 `server/menus.json` 时检查：合法 JSON、`schemaVersion` 为 1、`integration` 为 `remote` / `iframe` / `blank`；remote 模式 `remote.name` 等于应用 name（`--name` 或 package name）、`src/components/{preset}`（默认 `ComponentPreset`）与每个叶子菜单的 `component` 目录存在；`permission` 必须在 `server/libs/permissions.js` 声明的权限树里；`key` 匹配 `[a-z0-9-]` 且同级唯一、最多两级；iframe / blank 叶子需 `path`。没有声明任何菜单只给警告 |
 
 zip 根目录直接包含 `package.json`、`build/`、`server/`；排除 `node_modules`、`.git`、`.DS_Store`、`.env*`、`server/build`、`*.log`、本地 sqlite 库（`*.db` / `*.sqlite`）。
 

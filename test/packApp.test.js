@@ -195,4 +195,97 @@ describe('packApp', () => {
       /failed \(404\): app demo not found/
     );
   });
+
+  describe('server/menus.json', () => {
+    const writeMenus = async manifest => fs.outputJson(path.join(root, 'server/menus.json'), manifest);
+    const writeComponent = name => fs.outputFile(path.join(root, 'src/components', name, 'index.js'), 'export default 1;');
+    const writePermissions = tree => fs.outputFile(path.join(root, 'server/libs/permissions.js'), `module.exports = ${JSON.stringify(tree)};`);
+    const remoteManifest = (menus, extra = {}) => ({ schemaVersion: 1, integration: 'remote', remote: { name: 'demo-app' }, menus, ...extra });
+
+    it('没有 menus.json 时不检查', async () => {
+      await createProject(root);
+      const result = await checkAppPackage(root);
+      assert.equal(result.ok, true);
+      assert.equal(result.menus, null);
+    });
+
+    it('合法的 remote 菜单通过检查（含二级菜单与权限码）', async () => {
+      await createProject(root);
+      await writeComponent('ComponentPreset');
+      await writeComponent('OrderList');
+      await writeComponent('SalesReport');
+      await writePermissions({ modules: [{ code: 'order', modules: [{ code: 'order', permissions: [{ code: 'view' }] }] }, { code: 'report', permissions: [{ code: 'sales' }] }] });
+      await writeMenus(
+        remoteManifest([
+          { key: 'orders', label: '订单', permission: 'order:order:view', component: 'OrderList' },
+          { key: 'report', label: '报表', children: [{ key: 'sales', label: '销售', permission: 'report:sales', component: 'SalesReport' }] }
+        ])
+      );
+      const result = await checkAppPackage(root);
+      assert.deepEqual(result.errors, []);
+      assert.equal(result.ok, true);
+    });
+
+    it('空菜单只给警告', async () => {
+      await createProject(root);
+      await writeComponent('ComponentPreset');
+      await writeMenus(remoteManifest([]));
+      const result = await checkAppPackage(root);
+      assert.equal(result.ok, true);
+      assert.match(result.warnings.join(), /declares no menus/);
+    });
+
+    it('一次列出 remote.name、预设、组件、权限码、层级与 key 的问题', async () => {
+      await createProject(root);
+      await writePermissions({ modules: [{ code: 'order', permissions: [{ code: 'view' }] }] });
+      await writeMenus(
+        remoteManifest(
+          [
+            { key: 'Orders', label: '订单', component: 'OrderList' },
+            { key: 'refund', label: '退款', permission: 'refund:view', component: 'RefundList' },
+            { key: 'a', label: 'a', children: [{ key: 'b', label: 'b', children: [{ key: 'c', label: 'c', component: 'C' }] }] },
+            { key: 'dup', label: 'x', component: 'X' },
+            { key: 'dup', label: 'y', component: 'Y' }
+          ],
+          { remote: { name: 'other' } }
+        )
+      );
+      const { errors } = await checkAppPackage(root, { appName: 'demo-app' });
+      const text = errors.join('\n');
+      assert.match(text, /"remote.name" must equal the app slug \(demo-app\), got other/);
+      assert.match(text, /remote preset component src\/components\/ComponentPreset does not exist/);
+      assert.match(text, /menus\[0\]\.key must match/);
+      assert.match(text, /menus\[1\]\.permission "refund:view" is not declared/);
+      assert.match(text, /src\/components\/RefundList does not exist/);
+      assert.match(text, /menus\[2\]\.0 exceeds 2 menu levels|menus\[2\.0\] exceeds 2 menu levels/);
+      assert.match(text, /key is duplicated among siblings: dup/);
+    });
+
+    it('iframe / blank 的叶子菜单必须有 path', async () => {
+      await createProject(root);
+      await writeMenus({ integration: 'iframe', menus: [{ key: 'home', label: '首页' }, { key: 'docs', label: '文档', path: '/docs' }] });
+      const { errors } = await checkAppPackage(root);
+      assert.equal(errors.length, 1);
+      assert.match(errors[0], /menus\[0\]\.path is required when integration is iframe/);
+    });
+
+    it('非法 JSON、未知 schemaVersion、未知 integration 被拒绝', async () => {
+      await createProject(root);
+      await fs.outputFile(path.join(root, 'server/menus.json'), '{ bad');
+      assert.match((await checkAppPackage(root)).errors[0], /menus\.json is not valid JSON/);
+      await writeMenus({ schemaVersion: 2, menus: [] });
+      assert.match((await checkAppPackage(root)).errors[0], /unsupported schemaVersion 2/);
+      await writeMenus({ integration: 'popup', menus: [] });
+      assert.match((await checkAppPackage(root)).errors.join(), /"integration" must be one of/);
+    });
+
+    it('--name 覆盖应用 slug 参与 remote.name 校验', async () => {
+      await createProject(root);
+      await writeComponent('ComponentPreset');
+      await writeComponent('Home');
+      await writeMenus(remoteManifest([{ key: 'home', label: '首页', component: 'Home' }], { remote: { name: 'custom' } }));
+      assert.equal((await checkAppPackage(root, { appName: 'custom' })).ok, true);
+      assert.equal((await checkAppPackage(root)).ok, false);
+    });
+  });
 });
